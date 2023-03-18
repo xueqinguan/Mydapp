@@ -17,8 +17,8 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider(config.web3_provider)
 
 
 // DB
-const Mapping = require('../../models/mapping');
-const User = require('../../models/user');
+const Mapping = require('../../models/government/mapping');
+const User = require('../../models/government/user');
 
 // Session 
 var passport = require('passport');

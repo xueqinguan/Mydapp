@@ -68,20 +68,20 @@ router.post('/loginWithMetamask', passport.authenticate('verifySign_DataCustodia
 router.get('/profile', isAuthenticated, async (req, res) => {
     const address = req.query.address;
 
-    await deviceBinding.findOne({ address: address })
-        .then(function (obj) {
-            if (!obj) {
-                console.log('obj not found');
-                res.render('appChain/DataCustodian/deviceBinding', { address: address });
-            } else {
-                console.log('obj found');
-                res.render('appChain/DataCustodian/profile', { address: address, devices: obj.device });
-            }
-        })
-        .catch(function (err) {
-            console.log(err);
-            res.redirect('appChain/DataCustodian/deviceBinding', { address: address });
-        });
+    // await deviceBinding.findOne({ address: address })
+    //     .then(function (obj) {
+    //         if (!obj) {
+    //             console.log('obj not found');
+    //             res.render('appChain/DataCustodian/deviceBinding', { address: address });
+    //         } else {
+    //             console.log('obj found');
+    //             res.render('appChain/DataCustodian/profile', { address: address, devices: obj.device });
+    //         }
+    //     })
+    //     .catch(function (err) {
+    //         console.log(err);
+    //         res.redirect('appChain/DataCustodian/deviceBinding', { address: address });
+    //     });
 });
 
 router.get('/deviceBinding', (req, res) => {
@@ -93,14 +93,14 @@ router.post('/deviceBinding', (req, res) => {
     let { pubkey, address, type, deviceID } = req.body;
     console.log(deviceID);
     console.log(type);
-    deviceID_typeModel.findOne({ device_ID: deviceID, device_type: type })
-        .then((obj) => {
-            if (obj)
-                console.log(obj)
-            else {
-                console.log(obj);
-            }
-        })
+    // deviceID_typeModel.findOne({ device_ID: deviceID, device_type: type })
+    //     .then((obj) => {
+    //         if (obj)
+    //             console.log(obj)
+    //         else {
+    //             console.log(obj);
+    //         }
+    //     })
 })
 
 router.get('/logout', function (req, res) {

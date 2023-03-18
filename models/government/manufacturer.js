@@ -23,6 +23,4 @@ const ManufactureSchema = new mongoose.Schema({
     }]
 });
 
-const manufacture = mongoose.model('Manufacture', ManufactureSchema);
-
-module.exports = manufacture;
+module.exports = ManufactureSchema;
