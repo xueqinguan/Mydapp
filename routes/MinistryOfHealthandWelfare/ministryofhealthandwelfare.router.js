@@ -78,12 +78,14 @@ module.exports = function (dbconnection) {
         failureRedirect: '/appChain/MinistryOfHealthandWelfare'
     }), async function (req, res) {
         const address = req.user.address;
-        res.send({ 'url': '/appChain/MinistryOfHealthandWelfare/profile?address=' + address });
+        req.session.address = address;
+        res.send({ 'url': '/appChain/MinistryOfHealthandWelfare/profile' });
+        // res.send({ 'url': '/appChain/MinistryOfHealthandWelfare/profile?address=' + address });
     });
 
 
     router.get('/profile', isAuthenticated, async (req, res) => {
-        const address = req.query.address;
+        const address = req.session.address;
         //console.log('profile = ' + address);
         await Manufacturer.findOne({ address: address })
             .then(function (obj) {
@@ -149,7 +151,7 @@ module.exports = function (dbconnection) {
             { new: true }
         )
             .then((doc) => {
-                res.redirect('/appChain/MinistryOfHealthandWelfare/profile?address=' + address.toLowerCase());
+                res.redirect('/appChain/MinistryOfHealthandWelfare/profile');
                 // res.redirect('appChain/MinistryOfHealthandWelfare/profile', { address: address, devices: doc.device });
             })
             .catch((err) => {
@@ -158,9 +160,47 @@ module.exports = function (dbconnection) {
     });
 
     router.get('/apply', (req, res) => {
-        res.render('appChain/MinistryOfHealthandWelfare/apply');
+        const address = req.session.address;
+        res.render('appChain/MinistryOfHealthandWelfare/apply', { address: address, apply: 'apply' });
     });
+    router.get('/download', async (req, res) => {
+        const address = req.session.address;
+        await Manufacturer.findOne({ address: address })
+            .then(function (obj) {
+                if (obj) {
+                    // console.log('obj found');
+                    const filteredArr = obj.device.map(({ device_ID, device_type }) => ({ device_ID, device_type }));
 
+                    const json = JSON.stringify(filteredArr);
+                    const filename = 'download.json';
+
+                    res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+                    res.setHeader('Content-type', 'application/json');
+
+                    fs.writeFile(filename, json, function (err) {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send('Internal server error');
+                            return;
+                        } else {
+                            // 下載檔案
+                            res.download(filename, function (err) {
+                                if (err) {
+                                    console.log(err);
+                                    res.status(500).send('Internal server error');
+                                }
+                                // 刪除檔案
+                                fs.unlinkSync(filename);
+                            });
+                        }
+                    });
+                }
+            })
+            .catch(function (err) {
+                console.log(err);
+                res.redirect('appChain/MinistryOfHealthandWelfare/profile', { address: address });
+            });
+    });
     router.get('/logout', function (req, res) {
         req.session.destroy(function (err) {
             if (err) {

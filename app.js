@@ -32,8 +32,8 @@ app.use(express.urlencoded({ extended: false }));
 // Express session
 app.use(session({
     secret: 'secret',
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
 }));
 
 // Connect flash

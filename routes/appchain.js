@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const google = require('./org1/google.router');
+//const google = require('./org1/google.router');
 const DataCustodian = require('./DataCustodian/dataCustodian.router')
 const MinistryOfHealthandWelfare = require('./MinistryOfHealthandWelfare/ministryofhealthandwelfare.router');
 
@@ -18,7 +18,8 @@ db2Connection.once('open', () => console.log(`${db2Connection.name}'s DB connect
 
 
 // router.use('/google', google);
-router.use('/DataCustodian', DataCustodian);
-router.use('/MinistryOfHealthandWelfare', require('./MinistryOfHealthandWelfare/ministryofhealthandwelfare.router')(db1Connection));
+
+router.use('/MinistryOfHealthandWelfare', MinistryOfHealthandWelfare(db1Connection));
+router.use('/DataCustodian', DataCustodian(db2Connection));
 
 module.exports = router;
