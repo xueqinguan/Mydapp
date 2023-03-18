@@ -1,0 +1,139 @@
+<%- include('partials/header'); %>
+<div class="container mt-2">
+    <div class="row mt-4">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+            <div class="row" style="justify-content: center">
+                <div class="col-md-5">
+                    <div class="card">
+                        <div class="card card-body text-center">
+                            <iconify-icon
+                                icon="fluent:person-question-mark-20-filled"
+                                width="200"
+                                style="margin: auto"
+                            ></iconify-icon>
+
+                            <div class="card-body" style="height: 100px">
+                                <h4 class="text-center">de-identification collection</h4>
+                                <p class="card-text">
+                                    DataCustodian will not know the user corresponding to the device.
+                                </p>
+                            </div>
+                            
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-toggle="modal"
+                                data-target="#deviceModal"
+                                style="margin-top: 10px"
+                            >
+                                Binding
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+</div>
+
+<div
+    class="modal fade"
+    id="deviceModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                    Device Binding
+                </h5>
+            </div>
+            <div class="modal-body">
+                <form action="/appChain/DataCustodian/deviceBinding" method="post">
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text"
+                                >public key</span
+                            >
+                        </div>
+                        <input
+                            type="text"
+                            name="pubkey"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                        />
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text"
+                                >Ethereum address</span
+                            >
+                        </div>
+                        <input
+                            id="address"
+                            type="text"
+                            name="address"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                            readonly="readonly"
+                            style="background-color: white"
+                        />
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text"
+                                >device type</span
+                            >
+                        </div>
+                        <select class="form-select form-control" name="type">
+                            <option value="" disabled selected >Select device type</option>
+                            <option value="Smartwatches" >Smartwatches</optin>
+                            <option value="Smartglasses" >Smart glasses</option>
+                            <option value="Fitnesstrackers" >Fitness trackers</option>
+                        </select>
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text"
+                                >deviceID</span
+                            >
+                        </div>
+                        <input
+                            type="text"
+                            name="deviceID"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                        />
+                    </div>
+                    <div class="modal-footer">
+                        <input
+                            type="submit"
+                            value="Binding"
+                            class="btn btn-secondary"
+                        />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    async function main() {
+        let accounts = await web3.eth.getAccounts();
+        account = accounts[0];
+        // set modal content ...
+        //console.log(account);
+        $("#address").val(account);
+        // buildListener();
+    }
+    main();
+</script>
+<%- include('partials/footer'); %>

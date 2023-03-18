@@ -1,0 +1,75 @@
+<%- include('partials/header') -%>
+<body>
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-md-6 center-block offset-md-3">
+                <div style="margin-top: 10px" class="card text-center">
+                    <div
+                        style="font-size: 1.5rem; font-weight: bold"
+                        class="card-header"
+                    >
+                        登入
+                    </div>
+                    <iconify-icon
+                        icon="logos:metamask-icon"
+                        width="200"
+                        style="margin: auto"
+                    ></iconify-icon>
+                    <div class="card-body">
+                        <button
+                            id="loginWithMetamask"
+                            class="btn btn-primary btn-lg btn-block mt-3"
+                        >
+                            使用Metamask登入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    var account;
+    var require_signature = "<%= require_signature  %>";
+
+    //listener
+    async function buildListener() {
+        window.ethereum.on("accountsChanged", function (accounts) {
+            account = accounts[0];
+        });
+        $("#loginWithMetamask").on("click", async function (e) {
+            let result = await web3.eth.personal.sign(
+                require_signature,
+                account
+            );
+            //console.log("account = " + account);
+            $.ajax({
+                url: "/appChain/google/loginWithMetamask",
+                data: {
+                    signature: result, // signature
+                    account: account, // account
+                },
+                type: "post",
+                success: function (result) {
+                    if (result.msg) {
+                        console.log(result.msg);
+                    } else if (result.url) {
+                        window.location.href = result.url;
+                    }
+                },
+                error: function (err) {
+                    console.log(err);
+                },
+            });
+        });
+    }
+
+    async function main() {
+        let accounts = await web3.eth.getAccounts();
+        account = accounts[0];
+        buildListener();
+    }
+    main();
+</script>
+
+<%- include('partials/footer') -%>

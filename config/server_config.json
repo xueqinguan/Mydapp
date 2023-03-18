@@ -1,0 +1,16 @@
+{
+    "contracts": {
+        "identityManagerAddress": "0x38F8911c2d3EcC052B05d93B59c18EC08E7C1d77"
+    },
+    "identityChain": {
+        "address": "0x5e96B3837653E1f49A50dB962cE992DDb793f7aa",
+        "key": "fc371a1f35215ce99d29d221b3c094a5410db3b9b157ae04f64b79b56a14c116"
+    },
+    "org_info": {
+        "google": {
+            "address": "0x2Ae557C521b9C35B427E0a72BA5EaB191B6440CD",
+            "key": "b733c672018b5a4ad28e057e49adc7fd28057bf0a457debeea9bddabcfef9d24"
+        }
+    },
+    "web3_provider": "http://127.0.0.1:7545"
+}

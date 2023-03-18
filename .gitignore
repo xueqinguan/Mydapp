@@ -1,0 +1,12 @@
+config/keys.js
+config/example.json
+
+contracts/identityChain/*.json
+
+fablo/
+
+node_modules/
+
+wallet/
+
+package-lock.json

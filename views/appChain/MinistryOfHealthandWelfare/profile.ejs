@@ -1,0 +1,36 @@
+<%- include('partials/header'); %>
+<!-- deviceList.ejs -->
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 center-block offset-md-2">
+            <div class="card text-center">
+                <table>
+                    <thead>
+                        <tr
+                            style="
+                                background-color: #fb7b7b;
+                                border-radius: 30px;
+                                margin-right: 10px;
+                                color: white;
+                            "
+                        >
+                            <th>Device ID</th>
+                            <th>Type</th>
+                            <th>Manufactured Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for (let i = 0; i < devices.length; i++) { %>
+                        <tr class="">
+                            <td><%= devices[i].device_ID %></td>
+                            <td><%= devices[i].device_type %></td>
+                            <td><%= devices[i].manufactured_Date %></td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<%- include('partials/footer'); %>

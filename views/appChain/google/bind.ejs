@@ -1,0 +1,133 @@
+<%- include('partials/header') -%>
+<div class="container mt-2">
+    <div class="row">
+        <div class="col-md-6 center-block offset-md-3">
+            <div class="card text-center">
+                <div
+                    style="font-size: 1.5rem; font-weight: bold"
+                    class="card-header"
+                >
+                    Device Binding
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <div class="input-group-prepend ">
+                            <span id="" class="input-group-text">Ethereum address</span>
+                        </div>
+                        <input
+                            id="address"
+                            type="text"
+                            name="address"
+                            placeholder="Address"
+                            required="required"
+                            class="form-control"
+                            readonly="readonly"
+                            style="background-color: white"
+                        />
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text">device identifier</span>
+                        </div>
+                        <input
+                            id="deviceID"
+                            type="text"
+                            name="deviceID"
+                            placeholder="deviceID"
+                            required="required"
+                            class="form-control device_ID"
+                            style="background-color: white"
+                        />
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend"><span id=""
+                            class="input-group-text">device type</span>
+                        </div>
+                        <select class="form-select form-control device_type"  name="type">
+                            <option value="" disabled selected>Select type</option>
+                            <option value="Smart watches">Smart watches</optin>
+                            <option value="Smart glasses">Smart glasses</option>
+                            <option value="Head-mounted displays">Head-mounted displays</option>
+                        </select>
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend"><span id=""
+                            class="input-group-text">Manufacturers</span>
+                        </div>
+                        <select class="form-select form-control device_manufacturers"  name="manufacturers">
+                            <option value="" disabled selected>Select manufacturers</option>
+                            <option value="google">google</optin>
+                            <option value="apple">apple</option>
+                            <option value="apple">mi</option>
+                        </select>
+                        <div class="input-group-append">
+                            <button
+                                type="button"
+                                id="bind_button"
+                                class="func1 btn btn-secondary"
+                            >
+                                綁定裝置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var account = "<%= address %>";
+
+    async function main() {
+        // set modal content ...
+        $("#address").val(account);
+    }
+    main();
+    $('#bind_button').click(function(){
+        let address = account;
+        let deviceID = $(".device_ID").val();
+        let devicType = $(".device_type").val();
+        let manufacturers = $(".device_manufacturers").val();
+        // console.log(address);
+        // console.log(deviceID);
+        // console.log(devicType);
+        // console.log(manufacturers);
+        $.ajax({
+            url: '/appChain/google/deviceBinding',
+            data: {address,deviceID,devicType,manufacturers},
+            type: 'post',
+            cache: false,
+            dataType: 'json',
+            success: function(res) {
+                alert(res.msg);
+            },
+            error: function(err) {
+                alert(err);
+            }
+        });
+    })
+</script>
+<!-- <script>
+        $("#audit_button").click(function () {
+            let input_0 = $(".func1-input0").val();
+            let input_1 = $(".func1-input1").val();
+            let input_2 = $(".func1-input2").val();
+            console.log(input_0,input_1,input_2)
+            
+            $.ajax({
+                url: '/identityChain/addUser',
+                data: { type: input_0, Name: input_1, IDNumber: input_2},
+                type: 'post',
+                cache: false,
+                dataType: 'json',
+                success: function(res) {
+                    alert(res.msg);
+                },
+                error: function(err) {
+                    alert(err);
+                }
+            }); 
+        })
+    </script> -->
+<%- include('partials/footer') -%>
