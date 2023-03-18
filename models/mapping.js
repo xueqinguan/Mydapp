@@ -9,4 +9,6 @@ const MappingSchema = new mongoose.Schema({
     }
 });
 
-module.exports = MappingSchema;
+const mapping = mongoose.model('Mapping', MappingSchema);
+
+module.exports = mapping;

@@ -10,17 +10,17 @@ const bodyParser = require('body-parser');
 const app = express();
 
 // DB config
-const db1 = require('./config/keys').GovernmentDB_URI;
-const db2 = require('./config/keys').DataCustodianDB_1_URI;
+const db = require('./config/keys').GovernmentDB_URI;
+// const db2 = require('./config/keys').DataCustodianDB_1_URI;
 
 
-//connect to Mongo(success)
-// mongoose.connect(db, { useNewUrlParser: true })
-//     .then(() => console.log('MongoDB connected....'))
-//     .catch(err => console.log(err));
+// connect to Mongo(success)
+mongoose.connect(db, { useNewUrlParser: true })
+    .then(() => console.log('MongoDB connected....'))
+    .catch(err => console.log(err));
 
-const db1Connection = mongoose.createConnection(db1, { useNewUrlParser: true });
-db1Connection.once('open', () => console.log(`Connected to ${db1}...`));
+// const db1Connection = mongoose.createConnection(db1, { useNewUrlParser: true });
+// db1Connection.once('open', () => console.log(`Connected to ${db1}...`));
 
 // const db2Connection = mongoose.createConnection(db2, { useNewUrlParser: true });
 // db1Connection.once('open', () => console.log(`Connected to ${db2}...`));
@@ -68,7 +68,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 
 // Routes
-app.use('/identityChain', require('./routes/identityChain/identityChain')(db1Connection));
+app.use('/identityChain', require('./routes/identityChain/identityChain'));
 app.use('/appChain', require('./routes/appchain'));
 const PORT = process.env.PORT || 3000;
 
