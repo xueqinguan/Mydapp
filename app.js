@@ -20,7 +20,10 @@ const db2 = require('./config/keys').DataCustodianDB_1_URI;
 //     .catch(err => console.log(err));
 
 const db1Connection = mongoose.createConnection(db1, { useNewUrlParser: true });
-db1Connection.once('open', () => console.log(`${db1Connection.name}'s           DB connected by DID`));
+db1Connection.once('open', () => {
+    console.log('\x1b[35m%s\x1b[0m', '--------------------Database information-------------------');
+    console.log('\x1b[35m%s\x1b[0m', `${db1Connection.name}'s           DB connected by DID`);
+});
 
 // const db2Connection = mongoose.createConnection(db2, { useNewUrlParser: true });
 // db1Connection.once('open', () => console.log(`Connected to ${db2}...`));
@@ -72,4 +75,5 @@ app.use('/identityChain', require('./routes/identityChain/identityChain')(db1Con
 app.use('/appChain', require('./routes/appchain'));
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, console.log(`http://localhost:${PORT}/identityChain`));
+
+module.exports = app;

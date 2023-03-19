@@ -14,6 +14,4 @@ const deviceBindingSchema = new mongoose.Schema({
     }
 });
 
-const deviceBinding = mongoose.model('deviceBinding', deviceBindingSchema);
-
-module.exports = deviceBinding;
+module.exports = deviceBindingSchema;

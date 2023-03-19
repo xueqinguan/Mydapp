@@ -1,6 +1,8 @@
 const express = require('express');
 const fs = require('fs');
 const router = express.Router();
+const moment = require('moment');
+
 
 // session
 const passport = require('passport');
@@ -18,7 +20,7 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider(config.web3_provider)
 const require_signature = "government?nonce:666";
 
 module.exports = function (dbconnection) {
-    // User and Org model (mongoose)
+    // Manufacturer and Org model (mongoose)
     const Manufacturer = dbconnection.model('manufactures', require('../../models/government/manufacturer'));
     const Org = dbconnection.model('orgs', require('../../models/government/organization'));
 
@@ -134,13 +136,12 @@ module.exports = function (dbconnection) {
         // Generate device ID and its associated information
         let deviceArr = [];
         for (let i = 0; i < number; i++) {
-            let tmp = {
+            let tmpObj = {
                 device_ID: generateDeviceId(),
                 device_type: type,
                 manufactured_Date: new Date()
             }
-
-            deviceArr.push(tmp);
+            deviceArr.push(tmpObj);
         }
 
 
@@ -159,9 +160,9 @@ module.exports = function (dbconnection) {
             });
     });
 
-    router.get('/apply', (req, res) => {
+    router.get('/apply', isAuthenticated, (req, res) => {
         const address = req.session.address;
-        res.render('appChain/MinistryOfHealthandWelfare/apply', { address: address, apply: 'apply' });
+        res.render('appChain/MinistryOfHealthandWelfare/apply', { address: address });
     });
     router.get('/download', async (req, res) => {
         const address = req.session.address;
