@@ -7,17 +7,18 @@
                 <div class="col-md-5">
                     <div class="card">
                         <div class="card card-body text-center">
+                            
                             <iconify-icon
-                                icon="fluent:person-question-mark-20-filled"
+                                icon="material-symbols:add-chart"
                                 width="200"
                                 style="margin: auto"
                             ></iconify-icon>
 
                             <div class="card-body" style="height: 100px">
-                                <h4 class="text-center">de-identification collection</h4>
-                                <p class="card-text">
+                                <h4 class="text-center">Add physiological data</h4>
+                                <!-- <p class="card-text">
                                     DataCustodian will not know the user corresponding to the device.
-                                </p>
+                                </p> -->
                             </div>
                             
                             <button
@@ -50,11 +51,11 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">
-                    Device Binding
+                    Add 
                 </h5>
             </div>
             <div class="modal-body">
-                <form action="/appChain/DataCustodian/binding" method="post">
+                <form action="/appChain/DataCustodian/addData" method="post">
                     <div class="input-group mt-3">
                         <div class="input-group-prepend">
                             <span id="" class="input-group-text"
@@ -62,8 +63,10 @@
                             >
                         </div>
                         <input
+                            id="pubkey"
                             type="text"
                             name="pubkey"
+                            readonly="readonly"
                             placeholder=""
                             required="required"
                             class="form-control"
@@ -83,21 +86,7 @@
                             required="required"
                             class="form-control"
                             readonly="readonly"
-                            style="background-color: white"
                         />
-                    </div>
-                    <div class="input-group mt-3">
-                        <div class="input-group-prepend">
-                            <span id="" class="input-group-text"
-                                >device type</span
-                            >
-                        </div>
-                        <select class="form-select form-control" name="type">
-                            <option value="" disabled selected >Select device type</option>
-                            <option value="Smartwatches" >Smartwatches</optin>
-                            <option value="Smartglasses" >Smart glasses</option>
-                            <option value="Fitnesstrackers" >Fitness trackers</option>
-                        </select>
                     </div>
                     <div class="input-group mt-3">
                         <div class="input-group-prepend">
@@ -106,8 +95,66 @@
                             >
                         </div>
                         <input
+                            id="deviceID"
                             type="text"
                             name="deviceID"
+                            placeholder=""
+                            required="required"
+                            readonly="readonly"
+                            class="form-control"
+                        />
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text"
+                                >data type</span
+                            >
+                        </div>
+                        <select class="form-select form-control" name="type">
+                            <option value="" disabled selected >Select data type</option>
+                            <option value="Heartrates" >Heart rates</optin>
+                            <option value="Bloodpressure" >Blood pressure</option>
+                            <option value="Stepstaken" >Steps taken</option>
+                            <option value="Bodytemperature">Body temperature</option>
+                        </select>
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text"
+                                >start Date</span
+                            >
+                        </div>
+                        <input
+                            type="text"
+                            name="startDate"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                        />
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text"
+                                >end Date</span
+                            >
+                        </div>
+                        <input
+                            type="text"
+                            name="endDate"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                        />
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text"
+                                >frequency</span
+                            >
+                        </div>
+                        <input
+                            type="text"
+                            name="frequency"
                             placeholder=""
                             required="required"
                             class="form-control"
@@ -116,7 +163,7 @@
                     <div class="modal-footer">
                         <input
                             type="submit"
-                            value="Binding"
+                            value="ADD"
                             class="btn btn-secondary"
                         />
                     </div>
@@ -126,12 +173,16 @@
     </div>
 </div>
 <script>
+    var pubkey = "<%= pubkey  %>";
+    var deviceID = "<%= deviceID  %>";
     async function main() {
         let accounts = await web3.eth.getAccounts();
         account = accounts[0];
         // set modal content ...
         //console.log(account);
         $("#address").val(account);
+        $("#pubkey").val(pubkey);
+        $("#deviceID").val(deviceID);
         // buildListener();
     }
     main();

@@ -21,8 +21,8 @@ const require_signature = "government?nonce:666";
 
 module.exports = function (dbconnection) {
     // Manufacturer and Org model (mongoose)
-    const Manufacturer = dbconnection.model('manufactures', require('../../models/government/manufacturer'));
-    const Org = dbconnection.model('orgs', require('../../models/government/organization'));
+    const Manufacturer = dbconnection.model('manufactures', require('../../models/Government/manufacturer'));
+    const Org = dbconnection.model('orgs', require('../../models/Government/organization'));
 
 
 
@@ -36,8 +36,20 @@ module.exports = function (dbconnection) {
         }
     };
 
-    // render to MinistryofHealthandWelfare homepage
-    // url : http://localhost:3000/appChain/MinistryofHealthandWelfare
+    const generateDeviceId = () => {
+        const deviceIdLength = 20; // Set the desired length of the device ID
+        let deviceId = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+        for (let i = 0; i < deviceIdLength; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            deviceId += characters.charAt(randomIndex);
+        }
+
+        return deviceId;
+    }
+
+
     router.get('/', (req, res) => {
         res.render('appChain/MinistryOfHealthandWelfare/homepage', { 'require_signature': require_signature, 'contract_address': contract_address });
     });
@@ -95,9 +107,14 @@ module.exports = function (dbconnection) {
                     // console.log('obj not found');
                     res.render('appChain/MinistryOfHealthandWelfare/apply', { address: address });
                 } else {
-                    // console.log('obj found');
-                    // console.log(obj);
-                    res.render('appChain/MinistryOfHealthandWelfare/profile', { address: address, devices: obj.device });
+                    const formattedDevices = obj.device.map(device => {
+                        return {
+                            device_ID: device.device_ID,
+                            device_type: device.device_type,
+                            manufactured_Date: moment(device.manufactured_Date).format('YYYY-MM-DD hh:mm:ss')
+                        }
+                    });
+                    res.render('appChain/MinistryOfHealthandWelfare/profile', { address: address, devices: formattedDevices });
                 }
             })
             .catch(function (err) {
@@ -105,18 +122,7 @@ module.exports = function (dbconnection) {
                 res.redirect('appChain/MinistryOfHealthandWelfare/apply', { address: address });
             });
     })
-    const generateDeviceId = () => {
-        const deviceIdLength = 20; // Set the desired length of the device ID
-        let deviceId = '';
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-        for (let i = 0; i < deviceIdLength; i++) {
-            const randomIndex = Math.floor(Math.random() * characters.length);
-            deviceId += characters.charAt(randomIndex);
-        }
-
-        return deviceId;
-    }
 
     router.post('/deviceRegister', isAuthenticated, async (req, res) => {
         let { manufacturer, address, type, number } = req.body;

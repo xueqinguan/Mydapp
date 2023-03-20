@@ -15,13 +15,13 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider(config.web3_provider)
 const require_signature = "DataCustodian?nonce:778";
 
 const mongoose = require('mongoose');
+const { deflateRawSync } = require('zlib');
 
 
 module.exports = function (dbconnection) {
-    const Devicebinding = dbconnection.model('devicebindings', require('../../models/devicebinding'));
-    const Applylist = dbconnection.model('applylists', require('../../models/applylist'));
-    const User = dbconnection.model('users', require('../../models/government/user'));
-
+    const Devicebinding = dbconnection.model('devicebindings', require('../../models/DataCustodian/devicebinding'));
+    const Applylist = dbconnection.model('applylists', require('../../models/DataCustodian/applylist'));
+    const Data = dbconnection.model('datas', require('../../models/DataCustodian/data'))
 
     var isAuthenticated = function (req, res, next) {
         // console.log('isAuthenticated : ' + req.isAuthenticated());
@@ -106,16 +106,124 @@ module.exports = function (dbconnection) {
             let newDevicebinding = new Devicebinding({
                 pubkey: pubkey,
                 address: address.toLowerCase(),
-                device_ID: deviceID
+                deviceID: deviceID
+            })
+            let newData = new Data({
+                pubkey: pubkey,
+                address: address.toLowerCase(),
+                devices: {
+                    deviceID: deviceID
+                }
             })
             await newDevicebinding.save();
+            await newData.save();
             res.render('appChain/DataCustodian/profile', { address: address });
         }
 
+    });
+
+
+
+    router.get('/addData', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        let pubkey, deviceID;
+        await Devicebinding.findOne({ address: address })
+            .then((obj) => {
+                pubkey = obj.pubkey;
+                deviceID = obj.deviceID;
+            })
+            .catch(function (err) {
+                console.log(err);
+                res.redirect('appChain/DataCustodian/profile', { address: address });
+            });
+        res.render('appChain/DataCustodian/addData', { address: address, pubkey: pubkey, deviceID: deviceID });
     })
 
-    router.get('/logout', function (req, res) {
-        req.session.destroy(function (err) {
+    function generateDataForDevice(type, frequency, startDateTime, endDateTime, num) {
+        let deviceData = [];
+        const dataInterval = frequency * 60 * 1000; // 計算資料產生頻率的毫秒數
+        let currentDateTime = startDateTime.getTime();
+        let isSleeping = false;
+        let dataID = num;
+
+        while (currentDateTime < endDateTime.getTime()) {
+            const hourOfDay = new Date(currentDateTime).getUTCHours();
+            let value = 0;
+
+            if (type === "Stepstaken") {
+                value = isSleeping ? 0 : Math.floor(Math.random() * (1400 - 1000 + 1)) + 1000;
+            } else if (type === "Heartrates") {
+                if (hourOfDay >= 6 && hourOfDay < 22) {
+                    value = Math.floor(Math.random() * (100 - 80 + 1)) + 80;
+                } else {
+                    value = Math.floor(Math.random() * (70 - 60 + 1)) + 60;
+                }
+            } else if (type === "Bodytemperature") {
+
+            }
+
+            const data = {
+                dataID: `${type}_${dataID}`,
+                value: `${value}`,
+                timestamp: new Date(currentDateTime)
+            };
+
+            deviceData.push(data);
+            currentDateTime += dataInterval;
+            if (hourOfDay >= 22 || hourOfDay < 8) {
+                isSleeping = true;
+            } else {
+                isSleeping = false;
+            }
+
+            dataID++;
+        }
+
+        return deviceData;
+    }
+
+
+    router.post('/addData', async (req, res) => {
+        let { address, type, startDate, endDate, frequency } = req.body;
+        await Data.findOne({ address: address.toLowerCase() })
+            .then(async (data) => {
+                const types = data.devices.types;
+                const index = types.findIndex(t => t.type === type);
+                if (index === -1) {
+                    // Type does not exist, add new type
+                    types.push({ type });
+                    // console.log('type in not DB');
+                    await data.save();
+                }
+                // else {
+                //     console.log('type in DB');
+                // }
+            })
+
+        await Data.findOne(
+            { address: address.toLowerCase(), 'devices.types.type': type },
+            { 'devices.types.$': 1 })
+            .then(async (result) => {
+
+                const typeObj = result?.devices?.types?.[0];
+                const dataArr = typeObj ? typeObj.data : [];
+
+                await Data.findOneAndUpdate(
+                    { address: address.toLowerCase(), 'devices.types.type': type },
+                    { $push: { 'devices.types.$.data': { $each: generateDataForDevice(type, frequency, new Date(startDate), new Date(endDate), dataArr.length) } } },
+                    { new: true })
+                    .then((result) => {
+                        res.render('appChain/DataCustodian/profile', { address: address });
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                    });
+            })
+    })
+
+
+    router.get('/logout', (req, res) => {
+        req.session.destroy((err) => {
             if (err) {
                 console.error(err);
             } else {

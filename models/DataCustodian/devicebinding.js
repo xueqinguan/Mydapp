@@ -2,13 +2,14 @@ const mongoose = require('mongoose');
 
 const deviceBindingSchema = new mongoose.Schema({
     pubkey: {
-        require: true,
         type: String,
+        require: true
     },
     address: {
-        type: String
+        type: String,
+        require: true
     },
-    device_ID: {
+    deviceID: {
         type: String,
         require: true
     }
