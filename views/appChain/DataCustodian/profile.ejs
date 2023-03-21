@@ -1,10 +1,97 @@
 <%- include('partials/header'); %>
-<!-- deviceList.ejs -->
-<div class="container mt-2">
-    <div class="row">
-        <div class="col-md-8 center-block offset-md-2">
-            <div class="card text-center">profile</div>
-        </div>
-    </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div style="width: 1000px; height: 500px; float: none; margin: auto">
+    <canvas id="heartRateChart"></canvas>
 </div>
+<div style="width: 1000px; height: 500px; float: none; margin: auto">
+    <canvas id="stepsTakenChart"></canvas>
+</div>
+
+<script>
+    var chartData = JSON.parse(`<%- chartData %>`);
+
+    // 解析心率数据和步数数据
+    var heartRateData = chartData[0].data;
+    var stepsTakenData = chartData[1].data;
+
+    // 创建心率折线图
+    var heartRateCtx = document
+        .getElementById('heartRateChart')
+        .getContext('2d');
+    var heartRateChart = new Chart(heartRateCtx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: chartData[0].label,
+                    data: heartRateData,
+                    borderColor: 'red',
+                    fill: false,
+                },
+            ],
+        },
+        options: {
+            scales: {
+                xAxes: [
+                    {
+                        type: 'time',
+                        time: {
+                            parser: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
+                            tooltipFormat: 'HH:mm:ss',
+                            unit: 'day',
+                        },
+                    },
+                ],
+                yAxes: [
+                    {
+                        ticks: {
+                            suggestedMin: 0,
+                        },
+                    },
+                ],
+            },
+        },
+    });
+
+    // 创建步数折线图
+    var stepsTakenCtx = document
+        .getElementById('stepsTakenChart')
+        .getContext('2d');
+    var stepsTakenChart = new Chart(stepsTakenCtx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: chartData[1].label,
+                    data: stepsTakenData,
+                    borderColor: 'blue',
+                    fill: false,
+                },
+            ],
+        },
+        options: {
+            scales: {
+                xAxes: [
+                    {
+                        type: 'time',
+                        time: {
+                            parser: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
+                            tooltipFormat: 'll HH:mm',
+                            unit: 'day',
+                        },
+                    },
+                ],
+                yAxes: [
+                    {
+                        ticks: {
+                            suggestedMin: 0,
+                        },
+                    },
+                ],
+            },
+        },
+    });
+</script>
+
 <%- include('partials/footer'); %>

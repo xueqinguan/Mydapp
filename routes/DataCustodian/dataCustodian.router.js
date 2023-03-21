@@ -15,7 +15,6 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider(config.web3_provider)
 const require_signature = "DataCustodian?nonce:778";
 
 const mongoose = require('mongoose');
-const { deflateRawSync } = require('zlib');
 
 
 module.exports = function (dbconnection) {
@@ -73,14 +72,63 @@ module.exports = function (dbconnection) {
     router.get('/profile', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         await Devicebinding.findOne({ address: address })
-            .then((obj) => {
-                if (!obj) {
-                    // console.log('obj not found');
+            .then(async (obj) => {
+                if (!obj) {// Render to the binding page without binding
                     res.render('appChain/DataCustodian/binding', { address: address });
                 } else {
-                    // console.log('obj found');
-                    // console.log(obj);
-                    res.render('appChain/DataCustodian/profile', { address: address, devices: obj.device });
+                    await Data.findOne({ address: address })
+                        .then((doc) => {
+                            if (!doc) {
+                                return;
+                            }
+                            const dataByType = {};
+                            const userHaveType = [];
+
+                            // 遍歷每一個 type
+                            doc.devices.types.forEach(({ type, data }) => {
+                                // 建立空陣列儲存每個 type 的資料
+                                userHaveType.push(type);
+                                dataByType[type] = [];
+
+                                // 將該 type 的所有資料加入到對應的陣列中
+                                dataByType[type].push(...data.map(({ value, timestamp }) => ({ value, timestamp })));
+                            });
+
+                            const result = {
+                                dataByType,
+                                userHaveType
+                            };
+
+                            // const chartData = result.userHaveType.map(type => {
+                            //     return {
+                            //         label: type,
+                            //         data: result.dataByType[type].map(dataPoint => {
+                            //             return {
+                            //                 x: new Date(dataPoint.timestamp),
+                            //                 y: dataPoint.value
+                            //             };
+                            //         })
+                            //     };
+                            // });
+                            const chartData = result.userHaveType.map(type => {
+                                const dataByType = result.dataByType[type];
+                                dataByType.sort((a, b) => a.timestamp - b.timestamp); // 按時間排序
+                                const dataPoints = dataByType.map(dataPoint => {
+                                    return {
+                                        x: new Date(dataPoint.timestamp),
+                                        y: dataPoint.value
+                                    };
+                                });
+
+                                return {
+                                    label: type,
+                                    data: dataPoints
+                                };
+                            });
+                            res.render('appChain/DataCustodian/profile', { address: address, chartData: JSON.stringify(chartData) });
+                        })
+
+                    //res.render('appChain/DataCustodian/profile', { address: address });
                 }
             })
             .catch(function (err) {
@@ -150,8 +198,8 @@ module.exports = function (dbconnection) {
             const hourOfDay = new Date(currentDateTime).getUTCHours();
             let value = 0;
 
-            if (type === "Stepstaken") {
-                value = isSleeping ? 0 : Math.floor(Math.random() * (1400 - 1000 + 1)) + 1000;
+            if (type === "Stepstaken") {// 15 min
+                value = isSleeping ? 0 : Math.floor(Math.random() * (350 - 250 + 1)) + 1000;
             } else if (type === "Heartrates") {
                 if (hourOfDay >= 6 && hourOfDay < 22) {
                     value = Math.floor(Math.random() * (100 - 80 + 1)) + 80;
@@ -164,7 +212,7 @@ module.exports = function (dbconnection) {
 
             const data = {
                 dataID: `${type}_${dataID}`,
-                value: `${value}`,
+                value: value,
                 timestamp: new Date(currentDateTime)
             };
 
