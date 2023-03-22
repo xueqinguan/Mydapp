@@ -76,40 +76,54 @@ module.exports = function (dbconnection) {
                 if (!obj) {// Render to the binding page without binding
                     res.render('appChain/DataCustodian/binding', { address: address });
                 } else {
+                    req.session.binding = 'OK';
                     await Data.findOne({ address: address })
                         .then((doc) => {
                             if (!doc) {
+                                res.render('appChain/DataCustodian/profile', { address: address, chartData: null, errorMessage: 'No data found.' });
                                 return;
                             }
-                            const dataByType = {};
-                            const userHaveType = [];
+                            if (!doc.devices || !doc.devices.types || doc.devices.types.length === 0) {
+                                res.render('appChain/DataCustodian/profile', { address: address, chartData: null });
+                                return;
+                            }
+                            // const dataByType = {};
+                            // const userHaveType = [];
 
-                            // 遍歷每一個 type
-                            doc.devices.types.forEach(({ type, data }) => {
+                            // // 遍歷每一個 type
+                            // doc.devices.types.forEach(({ type, data }) => {
+                            //     // 建立空陣列儲存每個 type 的資料
+                            //     userHaveType.push(type);
+                            //     dataByType[type] = [];
+
+                            //     // 將該 type 的所有資料加入到對應的陣列中
+                            //     dataByType[type].push(...data.map(({ value, timestamp }) => ({ value, timestamp })));
+                            // });
+                            const TYPE = ['Heartrates', 'Stepstaken', 'Bodytemperature', 'Systolicbloodpressure', 'Diastolicbloodpressure'];
+                            const dataByType = {};
+
+                            TYPE.forEach((type) => {
                                 // 建立空陣列儲存每個 type 的資料
-                                userHaveType.push(type);
                                 dataByType[type] = [];
 
-                                // 將該 type 的所有資料加入到對應的陣列中
-                                dataByType[type].push(...data.map(({ value, timestamp }) => ({ value, timestamp })));
+                                // 尋找 doc 中該 type 的資料
+                                const typeData = doc.devices.types.find((d) => d.type === type);
+
+                                // 如果有找到該 type 的資料，將其加入到對應的陣列中
+                                if (typeData) {
+                                    dataByType[type].push(...typeData.data.map(({ value, timestamp }) => ({ value, timestamp })));
+                                }
                             });
 
                             const result = {
                                 dataByType,
-                                userHaveType
-                            };
+                                userHaveType: TYPE // 將固定的 type 順序放到 userHaveType 中
+                            }
+                            // const result = {
+                            //     dataByType,
+                            //     userHaveType
+                            // };
 
-                            // const chartData = result.userHaveType.map(type => {
-                            //     return {
-                            //         label: type,
-                            //         data: result.dataByType[type].map(dataPoint => {
-                            //             return {
-                            //                 x: new Date(dataPoint.timestamp),
-                            //                 y: dataPoint.value
-                            //             };
-                            //         })
-                            //     };
-                            // });
                             const chartData = result.userHaveType.map(type => {
                                 const dataByType = result.dataByType[type];
                                 dataByType.sort((a, b) => a.timestamp - b.timestamp); // 按時間排序
@@ -125,6 +139,7 @@ module.exports = function (dbconnection) {
                                     data: dataPoints
                                 };
                             });
+                            // console.log(JSON.stringify(chartData));
                             res.render('appChain/DataCustodian/profile', { address: address, chartData: JSON.stringify(chartData) });
                         })
 
@@ -150,6 +165,7 @@ module.exports = function (dbconnection) {
         if (!obj) { //The device has not been applied for or the ID and type pairing error
             console.log('The device has not been applied for or the ID and type pairing error!');
             res.render('appChain/DataCustodian/binding', { address: address });
+            return;
         } else {//Devicebinding
             let newDevicebinding = new Devicebinding({
                 pubkey: pubkey,
@@ -165,9 +181,8 @@ module.exports = function (dbconnection) {
             })
             await newDevicebinding.save();
             await newData.save();
-            res.render('appChain/DataCustodian/profile', { address: address });
+            res.redirect('/appChain/DataCustodian/profile');
         }
-
     });
 
 
@@ -193,13 +208,25 @@ module.exports = function (dbconnection) {
         let currentDateTime = startDateTime.getTime();
         let isSleeping = false;
         let dataID = num;
+        let stepsCount = 0; // 累加的步數
+
+        if (new Date(currentDateTime).getUTCHours() >= 22 || new Date(currentDateTime).getUTCHours() < 8) {
+            isSleeping = true;
+        } else {
+            isSleeping = false;
+        }
 
         while (currentDateTime < endDateTime.getTime()) {
             const hourOfDay = new Date(currentDateTime).getUTCHours();
+            console.log(hourOfDay);
             let value = 0;
 
             if (type === "Stepstaken") {// 15 min
-                value = isSleeping ? 0 : Math.floor(Math.random() * (350 - 250 + 1)) + 1000;
+                if (hourOfDay === 0) {
+                    stepsCount = 0; // 重設步數
+                }
+                value = isSleeping ? 0 : Math.floor(Math.random() * (200 - 20 + 1)) + 20;
+                stepsCount += value;
             } else if (type === "Heartrates") {
                 if (hourOfDay >= 6 && hourOfDay < 22) {
                     value = Math.floor(Math.random() * (100 - 80 + 1)) + 80;
@@ -207,12 +234,16 @@ module.exports = function (dbconnection) {
                     value = Math.floor(Math.random() * (70 - 60 + 1)) + 60;
                 }
             } else if (type === "Bodytemperature") {
-
+                value = (Math.random() * (38.0 - 36.6) + 36.6).toFixed(1);
+            } else if (type === "Systolicbloodpressure") {
+                value = Math.floor(Math.random() * (110 - 95 + 1)) + 95;
+            } else if (type === "Diastolicbloodpressure") {
+                value = Math.floor(Math.random() * (80 - 70 + 1)) + 70;
             }
 
             const data = {
                 dataID: `${type}_${dataID}`,
-                value: value,
+                value: type === "Stepstaken" ? stepsCount : value, // 根據類型決定資料的值
                 timestamp: new Date(currentDateTime)
             };
 
@@ -226,7 +257,7 @@ module.exports = function (dbconnection) {
 
             dataID++;
         }
-
+        console.log(deviceData);
         return deviceData;
     }
 
@@ -243,9 +274,6 @@ module.exports = function (dbconnection) {
                     // console.log('type in not DB');
                     await data.save();
                 }
-                // else {
-                //     console.log('type in DB');
-                // }
             })
 
         await Data.findOne(
@@ -256,17 +284,19 @@ module.exports = function (dbconnection) {
                 const typeObj = result?.devices?.types?.[0];
                 const dataArr = typeObj ? typeObj.data : [];
 
+                // generateDataForDevice(type, frequency, new Date(startDate), new Date(endDate), dataArr.length)
                 await Data.findOneAndUpdate(
                     { address: address.toLowerCase(), 'devices.types.type': type },
                     { $push: { 'devices.types.$.data': { $each: generateDataForDevice(type, frequency, new Date(startDate), new Date(endDate), dataArr.length) } } },
                     { new: true })
                     .then((result) => {
-                        res.render('appChain/DataCustodian/profile', { address: address });
+                        console.log('update successfully!');
                     })
                     .catch((err) => {
                         console.error(err);
                     });
-            })
+            });
+        res.redirect('/appChain/DataCustodian/profile');
     })
 
 

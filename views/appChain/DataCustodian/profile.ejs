@@ -1,11 +1,120 @@
 <%- include('partials/header'); %>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<div style="width: 1000px; height: 500px; float: none; margin: auto">
-    <canvas id="heartRateChart"></canvas>
-</div>
-<div style="width: 1000px; height: 500px; float: none; margin: auto">
-    <canvas id="stepsTakenChart"></canvas>
+<style>
+    .canvas_class {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        position: relative;
+        z-index: 1;
+    }
+    .div_canvas_class {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+<div
+    style="
+        position: relative;
+        width: 1202px;
+        height: 600px;
+        margin: 0 auto;
+        top: 20px;
+        border-top: none;
+    "
+    class="card"
+>
+    <ul class="nav nav-tabs" style="position: relative; z-index: 2">
+        <li class="nav-item" role="presentation" style="width: 300px">
+            <a
+                class="nav-link"
+                data-bs-target="#heartRateChart"
+                href="#"
+                onclick="document.getElementById('heartRateChart').style.display = 'block';
+                         document.getElementById('stepsTakenChart').style.display = 'none';
+                         document.getElementById('bodytemperatureChart').style.display = 'none';
+                         document.getElementById('bloodpressureChart').style.display = 'none';"
+                id="heartRateChartTab"
+                >heartRateChart</a
+            >
+        </li>
+        <li class="nav-item" role="presentation" style="width: 300px">
+            <a
+                class="nav-link"
+                data-bs-target="#stepsTakenChart"
+                href="#"
+                onclick="document.getElementById('heartRateChart').style.display = 'none';
+                         document.getElementById('stepsTakenChart').style.display = 'block';
+                         document.getElementById('bodytemperatureChart').style.display = 'none';
+                         document.getElementById('bloodpressureChart').style.display = 'none';"
+                id="stepsTakenChartTab"
+                >stepsTakenChart</a
+            >
+        </li>
+        <li class="nav-item" role="presentation" style="width: 300px">
+            <a
+                class="nav-link"
+                data-bs-target="#bodytemperatureChart"
+                href="#"
+                onclick="document.getElementById('heartRateChart').style.display = 'none';
+                         document.getElementById('stepsTakenChart').style.display = 'none';
+                         document.getElementById('bodytemperatureChart').style.display = 'block';
+                         document.getElementById('bloodpressureChart').style.display = 'none';"
+                id="bodytemperatureChartTab"
+                >bodytemperature</a
+            >
+        </li>
+        <li class="nav-item" role="presentation" style="width: 300px">
+            <a
+                class="nav-link"
+                data-bs-target="#bloodpressureChart"
+                href="#"
+                onclick="document.getElementById('heartRateChart').style.display = 'none';
+                         document.getElementById('stepsTakenChart').style.display = 'none';
+                         document.getElementById('bodytemperatureChart').style.display = 'none';
+                         document.getElementById('bloodpressureChart').style.display = 'block';"
+                id="bloodpressureChartTab"
+                >bloodpressure</a
+            >
+        </li>
+    </ul>
+    <div class="div_canvas_class">
+        <canvas
+            id="heartRateChart"
+            width="480"
+            height="210"
+            style="display: none"
+            class="canvas_class"
+        ></canvas>
+    </div>
+    <div class="div_canvas_class">
+        <canvas
+            id="stepsTakenChart"
+            width="480"
+            height="210"
+            style="display: none"
+            class="canvas_class"
+        ></canvas>
+    </div>
+    <div class="div_canvas_class">
+        <canvas
+            id="bodytemperatureChart"
+            width="480"
+            height="210"
+            style="display: none"
+            class="canvas_class"
+        ></canvas>
+    </div>
+    <div class="div_canvas_class">
+        <canvas
+            id="bloodpressureChart"
+            width="480"
+            height="210"
+            style="display: none"
+            class="canvas_class"
+        ></canvas>
+    </div>
 </div>
 
 <script>
@@ -14,6 +123,9 @@
     // 解析心率数据和步数数据
     var heartRateData = chartData[0].data;
     var stepsTakenData = chartData[1].data;
+    var bodytemperatureData = chartData[2].data;
+    var systolicbloodpressureData = chartData[3].data;
+    var diastolicbloodpressureData = chartData[4].data;
 
     // 创建心率折线图
     var heartRateCtx = document
@@ -26,30 +138,22 @@
                 {
                     label: chartData[0].label,
                     data: heartRateData,
-                    borderColor: 'red',
+                    borderColor: 'pink',
                     fill: false,
                 },
             ],
         },
         options: {
             scales: {
-                xAxes: [
-                    {
-                        type: 'time',
-                        time: {
-                            parser: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
-                            tooltipFormat: 'HH:mm:ss',
-                            unit: 'day',
-                        },
+                x: {
+                    ticks: {
+                        display: false, // 隱藏 X 軸字
                     },
-                ],
-                yAxes: [
-                    {
-                        ticks: {
-                            suggestedMin: 0,
-                        },
-                    },
-                ],
+                },
+                y: {
+                    min: 0,
+                    max: 120,
+                },
             },
         },
     });
@@ -65,6 +169,66 @@
                 {
                     label: chartData[1].label,
                     data: stepsTakenData,
+                    borderColor: 'purple',
+                    fill: false,
+                },
+            ],
+        },
+        options: {
+            scales: {
+                x: {
+                    ticks: {
+                        display: false, // 隱藏 X 軸字
+                    },
+                },
+            },
+        },
+    });
+    var bodytemperatureCtx = document
+        .getElementById('bodytemperatureChart')
+        .getContext('2d');
+    var bodytemperatureChart = new Chart(bodytemperatureCtx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: chartData[2].label,
+                    data: bodytemperatureData,
+                    borderColor: 'green',
+                    fill: false,
+                },
+            ],
+        },
+        options: {
+            scales: {
+                x: {
+                    ticks: {
+                        display: false, // 隱藏 X 軸字
+                    },
+                },
+                y: {
+                    min: 35,
+                    max: 40,
+                },
+            },
+        },
+    });
+    var bloodpressureCtx = document
+        .getElementById('bloodpressureChart')
+        .getContext('2d');
+    var bloodpressureChart = new Chart(bloodpressureCtx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: chartData[3].label,
+                    data: systolicbloodpressureData,
+                    borderColor: 'red',
+                    fill: false,
+                },
+                {
+                    label: chartData[4].label,
+                    data: diastolicbloodpressureData,
                     borderColor: 'blue',
                     fill: false,
                 },
@@ -72,25 +236,126 @@
         },
         options: {
             scales: {
-                xAxes: [
-                    {
-                        type: 'time',
-                        time: {
-                            parser: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
-                            tooltipFormat: 'll HH:mm',
-                            unit: 'day',
-                        },
+                x: {
+                    ticks: {
+                        display: false, // 隱藏 X 軸字
                     },
-                ],
-                yAxes: [
-                    {
-                        ticks: {
-                            suggestedMin: 0,
-                        },
-                    },
-                ],
+                },
+                y: {
+                    min: 60,
+                    max: 120,
+                },
             },
         },
+    });
+    var heartRateTab = document.querySelector('#heartRateChartTab');
+    var stepsTakenTab = document.querySelector('#stepsTakenChartTab');
+    var bodytemperatureTab = document.querySelector('#bodytemperatureChartTab');
+    var bloodpressureTab = document.querySelector('#bloodpressureChartTab');
+
+    heartRateTab.addEventListener('click', function () {
+        document.getElementById('heartRateChart').style.display = 'block';
+        document.getElementById('stepsTakenChart').style.display = 'none';
+        document.getElementById('bodytemperatureChart').style.display = 'none';
+        document.getElementById('bloodpressureChart').style.display = 'none';
+    });
+
+    document
+        .querySelector('#heartRateChartTab')
+        .addEventListener('click', function () {
+            document.getElementById('heartRateChart').style.display = 'block';
+            document.getElementById('stepsTakenChart').style.display = 'none';
+            document.getElementById('bodytemperatureChart').style.display =
+                'none';
+            document.getElementById('bloodpressureChart').style.display =
+                'none';
+        });
+
+    stepsTakenTab.addEventListener('click', function () {
+        // 显示步数图表并隐藏心率图表
+        document.getElementById('heartRateChart').style.display = 'none';
+        document.getElementById('stepsTakenChart').style.display = 'block';
+        document.getElementById('bodytemperatureChart').style.display = 'none';
+        document.getElementById('bloodpressureChart').style.display = 'none';
+    });
+
+    document
+        .querySelector('#bodytemperatureChartTab')
+        .addEventListener('click', function () {
+            // 显示步数图表并隐藏心率图表
+            document.getElementById('heartRateChart').style.display = 'none';
+            document.getElementById('stepsTakenChart').style.display = 'block';
+            document.getElementById('bodytemperatureChart').style.display =
+                'none';
+            document.getElementById('bloodpressureChart').style.display =
+                'none';
+        });
+    bodytemperatureTab.addEventListener('click', function () {
+        // 显示步数图表并隐藏心率图表
+        document.getElementById('heartRateChart').style.display = 'none';
+        document.getElementById('stepsTakenChart').style.display = 'none';
+        document.getElementById('bodytemperatureChart').style.display = 'block';
+        document.getElementById('bloodpressureChart').style.display = 'none';
+    });
+
+    document
+        .querySelector('#bodytemperatureChartTab')
+        .addEventListener('click', function () {
+            // 显示步数图表并隐藏心率图表
+            document.getElementById('heartRateChart').style.display = 'none';
+            document.getElementById('stepsTakenChart').style.display = 'none';
+            document.getElementById('bodytemperatureChart').style.display =
+                'block';
+            document.getElementById('bloodpressureChart').style.display =
+                'none';
+        });
+
+    bloodpressureTab.addEventListener('click', function () {
+        // 显示步数图表并隐藏心率图表
+        document.getElementById('heartRateChart').style.display = 'none';
+        document.getElementById('stepsTakenChart').style.display = 'none';
+        document.getElementById('bodytemperatureChart').style.display = 'none';
+        document.getElementById('bloodpressureChart').style.display = 'block';
+    });
+
+    document
+        .querySelector('#bloodpressureChartTab')
+        .addEventListener('click', function () {
+            // 显示步数图表并隐藏心率图表
+            document.getElementById('heartRateChart').style.display = 'none';
+            document.getElementById('stepsTakenChart').style.display = 'none';
+            document.getElementById('bodytemperatureChart').style.display =
+                'none';
+            document.getElementById('bloodpressureChart').style.display =
+                'block';
+        });
+
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByTagName('canvas');
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = 'none';
+        }
+        tablinks = document.getElementsByClassName('tablinks');
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(
+                ' active',
+                ''
+            );
+        }
+        document.getElementById(tabName).style.display = 'block';
+        evt.currentTarget.className += ' active';
+    }
+    document.querySelectorAll('.nav-link').forEach((link) => {
+        link.addEventListener('click', () => {
+            // 先把所有的a tag移除active class
+            document.querySelectorAll('.nav-link').forEach((link) => {
+                link.classList.remove('active');
+            });
+
+            // 把被點擊的a tag加上active class
+            link.classList.add('active');
+        });
     });
 </script>
 
