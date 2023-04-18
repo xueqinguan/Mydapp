@@ -14,47 +14,50 @@ contract IdentityManager {
         _;
     }
     struct UserInfo {
-        //address lastModifyOrg;          // [org2.id]
         address personalIdentityAddress;   // address of access control manager
         address userAddress;            // binding addrss
-        uint userType;                  // user or org
-        //mapping(address => bool) orgs;  // [org1.id, org2.id]
     }
 
-    address[] _orgsArr = [0xA6479fA27A3ABc2D30D6598d2bEB5BcF3E7Bf0a4];
+    struct BindInfo {
+        string hashed;
+        uint userType;
+    }
+
+    address[] _orgsArr = [0x550D18C47d5e9Dedb01e685975A94EB9FD9488f6];
     mapping(address => bool) _orgs;
     mapping(string => UserInfo) _uniqueIdenity; // hash(id) map userAcc
     mapping(string => bool) _uniqueState; // hash(id) is added by orgs  (addUser function)
-    mapping(address => string) _bindUsers; // address map hash(id)
+    mapping(address => BindInfo) _bindUsers; // address map hash(id)
     mapping(string => bool) _bindState; // hash(id) not bind
   
 
     //event AddUserEvent(address orgAddress, uint status);
     //event BindUserAccountEvent(address orgAddress, address userAccount, string hashed);
 
-    function addUser(string memory hashed, uint userType) external onlyOrg{
-        require(_uniqueState[hashed] == false,"This hashed already add");
-        _uniqueState[hashed] = true;
-        UserInfo memory info = UserInfo(
-                                    address(0),
-                                    address(0),
-                                    userType
-                                );
-        _uniqueIdenity[hashed] = info;
+    function addUser(string memory hashed) external onlyOrg{
+        if(!_uniqueState[hashed]) {
+            _uniqueState[hashed] = true;
+            UserInfo memory info = UserInfo(
+                                        address(0),
+                                        address(0)
+                                    );
+            _uniqueIdenity[hashed] = info;
+        }
         
     }
 
-    function bindAccount(string memory hashed,address userAddress) external onlyOrg
+    function bindAccount(string memory hashed,address userAddress, uint userType) external onlyOrg
     {
         //bytes memory tempEmptyStringTest = bytes(emptyStringTest);
-        require(bytes(_bindUsers[userAddress]).length == 0,
+        require(bytes(_bindUsers[userAddress].hashed).length == 0,
                 "This address already binded.");
         require(_bindState[hashed] == false,
                 "This UniqueId already binded");
         require(_uniqueState[hashed],
                 "UniqueId invalid."); // need execute add user first.
                 
-        _bindUsers[userAddress] = hashed;    // for record address <==> hashed id
+        _bindUsers[userAddress].hashed = hashed;    // for record address <==> hashed id
+        _bindUsers[userAddress].userType = userType;
         _bindState[hashed] = true;           // for confirm this hashed id already bind before
 
         // create contract and transfer ownership to user himself
@@ -68,10 +71,14 @@ contract IdentityManager {
     }
 
     function getAccessManagerAddress(address userAddress) external view returns (address) {
-        return _uniqueIdenity[_bindUsers[userAddress]].personalIdentityAddress;
+        return _uniqueIdenity[_bindUsers[userAddress].hashed].personalIdentityAddress;
     }
 
     function getId() external view returns (string memory) {
-        return _bindUsers[msg.sender];
+        return _bindUsers[msg.sender].hashed;
+    }
+
+    function getUserType() external view returns (uint){
+        return _bindUsers[msg.sender].userType;
     }
 }

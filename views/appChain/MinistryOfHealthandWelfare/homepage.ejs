@@ -35,62 +35,69 @@
 </body>
 <script>
     var account;
-    var require_signature = "<%= require_signature  %>";
-    var contract_address = "<%= contract_address  %>";
+    var require_signature = '<%= require_signature  %>';
+    var contract_address = '<%= contract_address  %>';
     const emptyAddress =
-        "0x0000000000000000000000000000000000000000000000000000000000000000";
+        '0x0000000000000000000000000000000000000000000000000000000000000000';
 
     //listener
     async function buildListener() {
-        window.ethereum.on("accountsChanged", function (accounts) {
+        window.ethereum.on('accountsChanged', function (accounts) {
             account = accounts[0];
         });
-        $("#loginWithMetamask").on("click", async function (e) {
-            $.getJSON("../../contracts/IdentityManager.json", function (data) {
+        $('#loginWithMetamask').on('click', async function (e) {
+            $.getJSON('../../contracts/IdentityManager.json', function (data) {
                 // This code will be executed when the request succeeds
                 let contractInstance = new web3.eth.Contract(
                     data.abi,
                     contract_address
                 );
 
+                let identity, userType;
                 contractInstance.methods
                     .getId()
                     .call({ from: account })
                     .then((result) => {
                         if (result === emptyAddress || !result) {
                             return Promise.reject(
-                                "This account has not been bound yet!"
+                                'This account has not been bound yet!'
                             );
                         } else {
-                            // Sign the identity and then send to server
-                            return Promise.resolve(result);
+                            identity = result;
+                            return contractInstance.methods
+                                .getUserType()
+                                .call({ from: account });
                         }
                     })
                     .then((result) => {
-                        web3.eth.personal
-                            .sign(require_signature, account)
-                            .then((res) => {
-                                $.ajax({
-                                    url: "/appChain/MinistryOfHealthandWelfare/loginWithMetamask",
-                                    data: {
-                                        identity: result, // DID
-                                        signature: res, // signature
-                                        account: account, // account
-                                    },
-                                    type: "post",
-                                    success: function (res) {
-                                        console.log("success");
-                                        // console.log(res);
-                                        //- window.location.replace("/profile");
-                                        if (res.url)
-                                            window.location.href = res.url;
-                                    },
-                                    error: function (err) {
-                                        console.log("error");
-                                        alert("only organization can login");
-                                    },
-                                });
-                            });
+                        userType = result;
+                        if (userType !== '1') {
+                            return Promise.reject(
+                                'Only legal person can log in'
+                            );
+                        } else {
+                            return web3.eth.personal.sign(
+                                require_signature,
+                                account
+                            );
+                        }
+                    })
+                    .then((res) => {
+                        return $.ajax({
+                            url: '/appChain/MinistryOfHealthandWelfare/loginWithMetamask',
+                            data: {
+                                identity: identity, // DID
+                                signature: res, // signature
+                                account: account, // account
+                            },
+                            type: 'post',
+                        });
+                    })
+                    .then((res) => {
+                        console.log('success!');
+                        if (res.url) {
+                            window.location.href = res.url;
+                        }
                     })
                     .catch((err) => {
                         alert(err);
@@ -100,31 +107,6 @@
                 console.error(textStatus, errorThrown);
             });
         });
-        // $("#loginWithMetamask").on("click", async function (e) {
-        //     let result = await web3.eth.personal.sign(
-        //         require_signature,
-        //         account
-        //     );
-        //     //console.log("account = " + account);
-        //     $.ajax({
-        //         url: "/appChain/MinistryofHealthandWelfare/loginWithMetamask",
-        //         data: {
-        //             signature: result, // signature
-        //             account: account, // account
-        //         },
-        //         type: "post",
-        //         success: function (result) {
-        //             if (result.msg) {
-        //                 console.log(result.msg);
-        //             } else if (result.url) {
-        //                 window.location.href = result.url;
-        //             }
-        //         },
-        //         error: function (err) {
-        //             console.log(err);
-        //         },
-        //     });
-        // });
     }
 
     async function main() {

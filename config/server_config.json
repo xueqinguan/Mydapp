@@ -1,16 +1,14 @@
 {
     "contracts": {
-        "identityManagerAddress": "0x38F8911c2d3EcC052B05d93B59c18EC08E7C1d77"
+        "identityManagerAddress": "0x03a47C5Ab448d44FC3e00fe1414cADf17D728Cd4"
     },
     "identityChain": {
-        "address": "0x5e96B3837653E1f49A50dB962cE992DDb793f7aa",
-        "key": "fc371a1f35215ce99d29d221b3c094a5410db3b9b157ae04f64b79b56a14c116"
+        "address": "0x550D18C47d5e9Dedb01e685975A94EB9FD9488f6",
+        "key": "c0e8bf2310dc8b82f3b5df89405f046629ba863fa85e83444ddcffb3f2511502"
     },
-    "org_info": {
-        "google": {
-            "address": "0x2Ae557C521b9C35B427E0a72BA5EaB191B6440CD",
-            "key": "b733c672018b5a4ad28e057e49adc7fd28057bf0a457debeea9bddabcfef9d24"
-        }
+    "databroker": {
+        "address": "0x0dD3d5308F53DAa2FEEdA6B1f0f21f4f5da462cA",
+        "key": "48233be3f355cc1047c9e49e3f06aa8edffda7607a9bb9f69a9f4889a632a164"
     },
     "web3_provider": "http://127.0.0.1:7545"
 }

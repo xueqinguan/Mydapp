@@ -52,7 +52,6 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(flash());
 passport.serializeUser(function (user, done) {
     done(null, user);
 });

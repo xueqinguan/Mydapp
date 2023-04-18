@@ -27,7 +27,6 @@ module.exports = function (dbconnection) {
     const Organization = dbconnection.model('orgs', require('../../models/government/organization'));
 
     router.get('/', async (req, res) => {
-        // Something to check DB connection condition
         // if (dbconnection.readyState === 1) {
 
         //     console.log('Database connected:', dbconnection.db.databaseName);
@@ -70,11 +69,13 @@ module.exports = function (dbconnection) {
             }
             let user = await User.findOne(option);
 
+
             if (user) {
                 return done(null, { "identity": user.hashed, "type": "user" });
             }
             else {
                 req.flash('info', 'User is not exist.');
+
                 return done(null, false)
             }
         }
@@ -320,7 +321,7 @@ module.exports = function (dbconnection) {
 
         let txHash;
         let signedTxObj;
-        let tx_builder = contractInstance.methods.addUser(hashed, userType);
+        let tx_builder = contractInstance.methods.addUser(hashed);
         let encode_tx = tx_builder.encodeABI();
         let transactionObject = {
             gas: 6721975,
@@ -367,13 +368,14 @@ module.exports = function (dbconnection) {
         let type = req.user.type;
         let hashed = req.user.identity;
 
+        let userType;
         let user;
-        if (type == "org") {
+        if (type == 'org') {
+            userType = 1;
             if (pubkey == undefined) {
                 return res.send({
                     msg: `User is not exist.`
                 })
-
             }
             let option = {
                 'hashed': hashed,
@@ -382,13 +384,13 @@ module.exports = function (dbconnection) {
             // console.log(user)
         }
         else {
+            userType = 0;
+
             let option = {
-                'IDNUmber': IDNumber,
                 'hashed': hashed,
             }
             user = await User.findOne(option);
         }
-
         if (!user) {
             return res.send({
                 msg: `User is not exist.`
@@ -398,7 +400,7 @@ module.exports = function (dbconnection) {
 
         let txHash;
         let signedTxObj;
-        let tx_builder = contractInstance.methods.bindAccount(hashed, address);
+        let tx_builder = contractInstance.methods.bindAccount(hashed, address, userType);
         let encode_tx = tx_builder.encodeABI();
         let transactionObject = {
             gas: 6721975,

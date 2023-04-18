@@ -64,25 +64,25 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>負責人</td>
+                                        <td>Person In Charge</td>
                                         <td> <span>
                                                 <%= user.personInCharge %>
                                             </span></td>
                                     </tr>
                                     <tr>
-                                        <td>聯絡電話</td>
+                                        <td>Phone</td>
                                         <td> <span>
                                                 <%= user.phone %>
                                             </span></td>
                                     </tr>
                                     <tr>
-                                        <td>公司電子郵件</td>
+                                        <td>Email</td>
                                         <td> <span>
                                                 <%= user.email %>
                                             </span></td>
                                     </tr>
                                     <tr>
-                                        <td>統一編號</td>
+                                        <td>Uniform Number</td>
                                         <td> <span>
                                                 <%= user.UniformNumbers %>
                                             </span></td>
@@ -94,7 +94,7 @@
                                             </span></td>
                                     </tr>
                                     <tr>
-                                        <td>申請場景 </td>
+                                        <td>Ecosystem </td>
                                         <td> <span>
                                                 <%= user.type %>
                                             </span></td>
@@ -115,7 +115,6 @@
                                         </td>
                                     </tr>
                                     <% } %>
-
                                         <% if(user.address !="0x" ){ %>
                                             <tr>
                                                 <td>address</td>
@@ -128,7 +127,7 @@
                     </table>
                     <% if(user.address=='0x' && user.status== true ){ %>
                         <button type="button" data-toggle="modal" data-target="#bindModal"
-                            class="btn btn-block bind-btn btn-primary">綁定帳號</button>
+                            class="btn btn-block bind-btn btn-primary">bind account</button>
                         <% } %>
                 </div>
             </div>
@@ -193,8 +192,8 @@
                                             <label class="custom-file-label" for="privatekey-file">Choose your key.pem</label>
                                         </div>
                                         <div class="input-group-append">
-                                            <button type="button" id="key_enc" class="key-enc btn btn-primary">加密</button>
-                                            <button type="button" class="key-clear btn btn-secondary">清除</button>
+                                            <button type="button" id="key_enc" class="key-enc btn btn-primary">Encrypt</button>
+                                            <button type="button" class="key-clear btn btn-secondary">Clear</button>
                                         </div>
                                     </div>
                                     <div class="input-group mb-3">
@@ -202,7 +201,7 @@
                                             aria-label="With textarea" readonly="readonly"
                                             placeholder="Encryption result" rows="4"></textarea>
                                         <div class="input-group-prepend">
-                                            <button type="button" class="key-upload btn btn-info">上傳</button>
+                                            <button type="button" class="key-upload btn btn-info">Upload</button>
                                         </div>
                                     </div>
                                     <div class="row">
@@ -229,8 +228,8 @@
                                             <label class="custom-file-label" for="csr-file">Choose your key.csr</label>
                                         </div>
                                         <div class="input-group-append">
-                                            <button type="button" class="csr-enc btn btn-primary">加密</button>
-                                            <button type="button" class="csr-clear btn btn-secondary">清除</button>
+                                            <button type="button" class="csr-enc btn btn-primary">Encrypt</button>
+                                            <button type="button" class="csr-clear btn btn-secondary">Clear</button>
                                         </div>
                                     </div>
                                     <div class="input-group">
@@ -238,7 +237,7 @@
                                             aria-label="With textarea" readonly="readonly"
                                             placeholder="Encryption result" rows="4"></textarea>
                                         <div class="input-group-prepend">
-                                            <button type="button" class="csr-upload btn btn-info">上傳</button>
+                                            <button type="button" class="csr-upload btn btn-info">Upload</button>
                                         </div>
                                     </div>
                                 </div>
@@ -263,9 +262,19 @@
               </div>
             <div class="modal-body">
                 <form action="#" method="post">
+                    <!-- <div class="input-group mt-3" id="userType">
+                        <div class="input-group-prepend"><span id=""
+                            class="input-group-text">角色</span>
+                        </div>
+                        <select class="form-select form-control func1-input0"  name="type">
+                            <option value="" disabled selected>Select role</option>
+                            <option value="person">自然人</optin>
+                            <option value="organization">法人</option>
+                        </select>
+                    </div> -->
                     <div class="input-group mt-3">
                         <div class="input-group-prepend">
-                            <span id="" class="input-group-text">Ethereum address</span>
+                            <span id="" class="input-group-text">Address</span>
                         </div>
                         <input id="address" type="text" name="address"
                         placeholder="Address" required="required" class="form-control" readonly="readonly" style="background-color: white;">
@@ -273,7 +282,7 @@
                     <% if(type=="org" ){ %>
                         <div class="input-group mt-3">
                             <div class="input-group-prepend">
-                                <span id="" class="input-group-text">統一編號</span>
+                                <span id="" class="input-group-text">Uniform number</span>
                             </div>
                             <input id="identityId" type="text" name="identityId" placeholder="Identity card ID"
                                 required="required" class="form-control" readonly="readonly"
@@ -281,17 +290,17 @@
                         </div>
                         <div class="input-group mt-3">
                             <div class="input-group-prepend">
-                                <span id="" class="input-group-text">公鑰</span>
+                                <span id="" class="input-group-text">Public key</span>
                             </div>
                             <input id="pubkey" type="text" name="pubkey" placeholder="Public Key"
                                 required="required" class="form-control" readonly="readonly"
                                 style="background-color: white;">
-                            <input type="button" class="addpubkey btn btn-primary" value="新增公鑰">
+                            <input type="button" class="addpubkey btn btn-primary" value="Add public key">
                         </div>
                         <% }else{ %>
                             <div class="input-group mt-3">
                                 <div class="input-group-prepend">
-                                    <span id="" class="input-group-text">身份證字號</span></div>
+                                    <span id="" class="input-group-text">ID number</span></div>
                                 <input id="identityId" type="text" name="identityId"
                                     placeholder="Identity card ID" required="required" class="form-control"
                                     readonly="readonly" style="background-color: white;">
@@ -363,6 +372,7 @@
             $("#pubkey").val("")
         });
         $("#bind_Account").on('click', async function (e) {
+            // let userType = $(".func1-input0").val();
             let address = $("#address").val();
             let IDNumber = $("#identityId").val();
             let pubkey = $("#pubkey").val();

@@ -1,0 +1,130 @@
+<%- include('partials/header') -%>
+<body>
+    <div class="container mt-2">
+        <div class="row mt-3">
+            <div class="col-md-10 offset-md-1">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 style="margin: 0" class="font-weight-bold">
+                            Permission Operation
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Requester Name</th>
+                                    <th scope="col">Requester public key</th>
+                                    <th scope="col">Authorized Data</th>
+                                    <th scope="col">Operation</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <button
+                            type="button"
+                            data-toggle="modal"
+                            data-target="#authorizeModal"
+                            class="btn btn-primary btn-lg btn-block authorize"
+                        >
+                            Authorize
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div
+        class="modal fade"
+        id="authorizeModal"
+        data-backdrop="static"
+        data-keyboard="false"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Authorize</h5>
+                    <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <select class="form-select form-control" id="orgPubkey">
+                            <option value="" disabled selected>
+                                Select the reviewer you want to Authorize
+                            </option>
+                        </select>
+                        <!--
+                        <div class="input-group-prepend"><span id="" class="input-group-text">Authorized Organization</span>
+                        </div><input type="text" id="orgPubkey" placeholder="Enter Organization Public Key" required="required" class="form-control">
+                        -->
+                    </div>
+                    <div class="p-2 font-weight-bold">
+                        Select Authorization Data:
+                    </div>
+                    <div class="row mt-1"></div>
+                </div>
+                <div class="modal-footer">
+                    <input
+                        type="submit"
+                        value="submit"
+                        class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="modal fade"
+        id="revokePermission"
+        data-backdrop="static"
+        data-keyboard="false"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Inform</h5>
+                    <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Do you want to revoke the Organization
+                    <span class="font-weight-bold revokeOrgName"> </span>
+                    's access rights?
+                </div>
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-dismiss="modal"
+                    >
+                        cancel
+                    </button>
+                    <button type="button" class="revokeConfirm btn btn-primary">
+                        confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<%- include('partials/footer') -%>

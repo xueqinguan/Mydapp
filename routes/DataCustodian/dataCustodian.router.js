@@ -42,8 +42,6 @@ module.exports = function (dbconnection) {
         passwordField: 'signature',
         passReqToCallback: true
     },
-        // Bug: cannot connect to government DB check is user or org
-        // should using smart contract fixed this
         async function (req, username, password, done) {
             let account = username.toLowerCase(); //address
             let signature = password;
@@ -221,25 +219,58 @@ module.exports = function (dbconnection) {
             console.log(hourOfDay);
             let value = 0;
 
-            if (type === "Stepstaken") {// 15 min
-                if (hourOfDay === 0) {
-                    stepsCount = 0; // 重設步數
-                }
-                value = isSleeping ? 0 : Math.floor(Math.random() * (200 - 20 + 1)) + 20;
-                stepsCount += value;
-            } else if (type === "Heartrates") {
-                if (hourOfDay >= 6 && hourOfDay < 22) {
-                    value = Math.floor(Math.random() * (100 - 80 + 1)) + 80;
-                } else {
-                    value = Math.floor(Math.random() * (70 - 60 + 1)) + 60;
-                }
-            } else if (type === "Bodytemperature") {
-                value = (Math.random() * (38.0 - 36.6) + 36.6).toFixed(1);
-            } else if (type === "Systolicbloodpressure") {
-                value = Math.floor(Math.random() * (110 - 95 + 1)) + 95;
-            } else if (type === "Diastolicbloodpressure") {
-                value = Math.floor(Math.random() * (80 - 70 + 1)) + 70;
+            // if (type === "Stepstaken") {// 15 min
+            //     if (hourOfDay === 0) {
+            //         stepsCount = 0; // 重設步數
+            //     }
+            //     value = isSleeping ? 0 : Math.floor(Math.random() * (200 - 20 + 1)) + 20;
+            //     stepsCount += value;
+            // } else if (type === "Heartrates") {
+            //     if (hourOfDay >= 6 && hourOfDay < 22) {
+            //         value = Math.floor(Math.random() * (100 - 80 + 1)) + 80;
+            //     } else {
+            //         value = Math.floor(Math.random() * (70 - 60 + 1)) + 60;
+            //     }
+            // } else if (type === "Bodytemperature") {
+            //     value = (Math.random() * (38.0 - 36.6) + 36.6).toFixed(1);
+            // } else if (type === "Systolicbloodpressure") {
+            //     value = Math.floor(Math.random() * (110 - 95 + 1)) + 95;
+            // } else if (type === "Diastolicbloodpressure") {
+            //     value = Math.floor(Math.random() * (80 - 70 + 1)) + 70;
+            // }
+            switch (type) {
+                case "Stepstaken":
+                    if (hourOfDay === 0) {
+                        stepsCount = 0; // 重設步數
+                    }
+                    value = isSleeping ? 0 : Math.floor(Math.random() * (200 - 20 + 1)) + 20;
+                    stepsCount += value;
+                    break;
+
+                case "Heartrates":
+                    if (hourOfDay >= 6 && hourOfDay < 22) {
+                        value = Math.floor(Math.random() * (100 - 80 + 1)) + 80;
+                    } else {
+                        value = Math.floor(Math.random() * (70 - 60 + 1)) + 60;
+                    }
+                    break;
+
+                case "Bodytemperature":
+                    value = (Math.random() * (38.0 - 36.6) + 36.6).toFixed(1);
+                    break;
+
+                case "Systolicbloodpressure":
+                    value = Math.floor(Math.random() * (110 - 95 + 1)) + 95;
+                    break;
+
+                case "Diastolicbloodpressure":
+                    value = Math.floor(Math.random() * (80 - 70 + 1)) + 70;
+                    break;
+
+                default:
+                    break;
             }
+
 
             const data = {
                 dataID: `${type}_${dataID}`,

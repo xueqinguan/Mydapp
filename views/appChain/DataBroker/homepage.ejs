@@ -23,7 +23,7 @@
                     <div class="card-body">
                         <button
                             id="loginWithMetamask"
-                            class="btn btn-secondary btn-lg btn-block mt-2"
+                            class="btn btn-primary btn-lg btn-block mt-2"
                             style="
                                 width: 450px;
                                 height: 40px;
@@ -77,24 +77,19 @@
                     })
                     .then((result) => {
                         userType = result;
-                        if (userType !== '0') {
-                            return Promise.reject(
-                                'Only natural person can log in'
-                            );
-                        } else {
-                            return web3.eth.personal.sign(
-                                require_signature,
-                                account
-                            );
-                        }
+                        return web3.eth.personal.sign(
+                            require_signature,
+                            account
+                        );
                     })
                     .then((res) => {
                         return $.ajax({
-                            url: '/appChain/DataCustodian/loginWithMetamask',
+                            url: '/appChain/DataBroker/loginWithMetamask',
                             data: {
                                 identity: identity, // DID
                                 signature: res, // signature
                                 account: account, // account
+                                userType: userType,
                             },
                             type: 'post',
                         });

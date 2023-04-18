@@ -13,6 +13,6 @@ wallet/
 
 package-lock.json
 
-routes/org1
+routes/
 
 .DS_Store
