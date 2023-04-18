@@ -5,13 +5,10 @@
     "identityChain": {
         "address": "0x550D18C47d5e9Dedb01e685975A94EB9FD9488f6",
         "key": "c0e8bf2310dc8b82f3b5df89405f046629ba863fa85e83444ddcffb3f2511502"
-<<<<<<< HEAD
     },
     "databroker": {
         "address": "0x0dD3d5308F53DAa2FEEdA6B1f0f21f4f5da462cA",
         "key": "48233be3f355cc1047c9e49e3f06aa8edffda7607a9bb9f69a9f4889a632a164"
-=======
->>>>>>> 2e426fb0b25a73ef388c097a87e7b719bb259915
     },
     "web3_provider": "http://127.0.0.1:7545"
 }
