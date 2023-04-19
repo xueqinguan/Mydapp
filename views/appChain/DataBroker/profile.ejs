@@ -1,130 +1,209 @@
 <%- include('partials/header') -%>
-<body>
-    <div class="container mt-2">
-        <div class="row mt-3">
-            <div class="col-md-10 offset-md-1">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 style="margin: 0" class="font-weight-bold">
-                            Permission Operation
-                        </h4>
+<div class="container mt-2">
+    <div class="row mt-4">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+            <div class="row" style="justify-content: center">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card card-body text-center">
+                            <iconify-icon
+                                icon="icon-park-outline:hold-interface"
+                                width="200"
+                                style="margin: auto"
+                            ></iconify-icon>
+                            <div class="card-body" style="height: 80px">
+                                <h4 class="text-center">Data Provider</h4>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-toggle="modal"
+                                data-target="#ProviderModal"
+                                style="margin-top: 10px"
+                            >
+                                Who are you?
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Requester Name</th>
-                                    <th scope="col">Requester public key</th>
-                                    <th scope="col">Authorized Data</th>
-                                    <th scope="col">Operation</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        <button
-                            type="button"
-                            data-toggle="modal"
-                            data-target="#authorizeModal"
-                            class="btn btn-primary btn-lg btn-block authorize"
-                        >
-                            Authorize
-                        </button>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card card-body text-center">
+                            <iconify-icon
+                                icon="material-symbols:content-paste-search-rounded"
+                                width="200"
+                                style="margin: auto"
+                            ></iconify-icon>
+                            <div class="card-body" style="height: 80px">
+                                <h4 class="text-center">Data Requester</h4>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-toggle="modal"
+                                data-target="#RequesterModal"
+                                style="margin-top: 10px"
+                            >
+                                Who are you?
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="col-md-1"></div>
     </div>
-    <!-- Modal -->
-    <div
-        class="modal fade"
-        id="authorizeModal"
-        data-backdrop="static"
-        data-keyboard="false"
-        tabindex="-1"
-        aria-hidden="true"
-    >
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Authorize</h5>
-                    <button
-                        type="button"
-                        class="close"
-                        data-dismiss="modal"
-                        aria-label="Close"
-                    >
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="input-group">
-                        <select class="form-select form-control" id="orgPubkey">
-                            <option value="" disabled selected>
-                                Select the reviewer you want to Authorize
-                            </option>
-                        </select>
-                        <!--
-                        <div class="input-group-prepend"><span id="" class="input-group-text">Authorized Organization</span>
-                        </div><input type="text" id="orgPubkey" placeholder="Enter Organization Public Key" required="required" class="form-control">
-                        -->
-                    </div>
-                    <div class="p-2 font-weight-bold">
-                        Select Authorization Data:
-                    </div>
-                    <div class="row mt-1"></div>
-                </div>
-                <div class="modal-footer">
-                    <input
-                        type="submit"
-                        value="submit"
-                        class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
-                    />
-                </div>
-            </div>
-        </div>
-    </div>
+</div>
 
-    <div
-        class="modal fade"
-        id="revokePermission"
-        data-backdrop="static"
-        data-keyboard="false"
-        tabindex="-1"
-        aria-hidden="true"
-    >
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Inform</h5>
-                    <button
-                        type="button"
-                        class="close"
-                        data-dismiss="modal"
-                        aria-label="Close"
-                    >
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Do you want to revoke the Organization
-                    <span class="font-weight-bold revokeOrgName"> </span>
-                    's access rights?
-                </div>
-                <div class="modal-footer">
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-dismiss="modal"
-                    >
-                        cancel
-                    </button>
-                    <button type="button" class="revokeConfirm btn btn-primary">
-                        confirm
-                    </button>
-                </div>
+<!-- Modal -->
+<div
+    class="modal fade"
+    id="ProviderModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">I AM DATA PROVIDER</h5>
+            </div>
+            <div class="modal-body">
+                <form
+                    action="/appChain/DataBroker/dataprovider"
+                    method="post"
+                >
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text">public key</span>
+                        </div>
+                        <input
+                            id="pubkey"
+                            type="text"
+                            name="pubkey"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                        />
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text">Gender</span>
+                        </div>
+                        <select class="form-select form-control" name="gender">
+                            <option value="" disabled selected >Select gender</option>
+                            <option value="man" >Man</optin>
+                            <option value="woman" >Woman</optin>
+                        </select>
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text">Age</span>
+                        </div>
+                        <input
+                            type="text"
+                            name="age"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                            style="background-color: white"
+                        />
+                    </div>
+
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text">Height</span>
+                        </div>
+                        <input
+                            type="text"
+                            name="height"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                        />
+                    </div>
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text">Weight</span>
+                        </div>
+                        <input
+                            type="text"
+                            name="weight"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                        />
+                    </div>
+                    <div class="modal-footer">
+                        <input
+                            type="submit"
+                            value="Send"
+                            class="btn btn-success"
+                        />
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</body>
+</div>
+
+<div
+    class="modal fade"
+    id="RequesterModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">I AM DATA REQUESTER</h5>
+            </div>
+            <div class="modal-body">
+                <form
+                    action="/appChain/DataBroker/aboutme"
+                    method="post"
+                >
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text">public key</span>
+                        </div>
+                        <input
+                            id="pubkey"
+                            type="text"
+                            name="pubkey"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                        />
+                    </div>
+
+                    <div class="input-group mt-3">
+                        <div class="input-group-prepend">
+                            <span id="" class="input-group-text">Requester name</span>
+                        </div>
+                        <input
+                            type="text"
+                            name="weight"
+                            placeholder=""
+                            required="required"
+                            class="form-control"
+                        />
+                    </div>
+                    <div class="modal-footer">
+                        <input
+                            type="submit"
+                            value="Send"
+                            class="btn btn-success"
+                        />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <%- include('partials/footer') -%>

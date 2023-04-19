@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema({
+const DataProviderSchema = new mongoose.Schema({
     pubkey: {
         type: String
     },
@@ -18,4 +18,4 @@ const UserSchema = new mongoose.Schema({
     }
 });
 
-module.exports = UserSchema;
+module.exports = DataProviderSchema;

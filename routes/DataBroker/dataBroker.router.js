@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const router = express.Router();
 const openssl = require('openssl-nodejs');
-const moment = require('moment');
 
 
 // session
@@ -29,7 +28,7 @@ const { buildCCPOrg1, buildWallet } = require('../../util/AppUtil');
 
 // node version should up to 14
 const { ethers } = require('ethers');
-const { decrypt, encrypt } = require("eth-sig-util")
+const { decrypt, encrypt } = require("eth-sig-util");
 
 
 const require_signature = "databroker?nonce:666";
@@ -45,10 +44,14 @@ var adminUser;
 
 module.exports = function (dbconnection) {
     const Mapping = dbconnection.model('mappings', require('../../models/DataBroker/mapping'));
-    const User = dbconnection.model('users', require('../../models/DataBroker/user'))
+    const Dataprovider = dbconnection.model('dataproviders', require('../../models/DataBroker/dataprovider'));
+    const DataRequester = dbconnection.model('datarequester', require('../../models/DataBroker/datarequester'));
+
+
     let delay = async (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms))
     }
+
     async function opensslDecode(buffer_input) {
         return new Promise(function (reslove, reject) {
             openssl(['req', '-text', '-in', { name: 'key.csr', buffer: buffer_input }, '-pubkey'], function (err, result) {
@@ -238,74 +241,59 @@ module.exports = function (dbconnection) {
             res.send({ url: "/appChain/DataBroker/profile" });
         });
     router.get('/profile', isAuthenticated, async (req, res) => {
-
         let { identity, pubkey, userType } = req.user;
         let DB_filter = {
             'pubkey': pubkey
         }
-        let user = await User.findOne(DB_filter);
-
-        //first time login should fill in some information
-        if (!user && userType == 0) {
-            res.render('appChain/DataBroker/aboutme', { address: identity, pubkey });
-        } else if (user && userType == 0) {
+        let dataprovider = await Dataprovider.findOne(DB_filter);
+        let datarequester = await DataRequester.findOne(DB_filter);
+        if (dataprovider) {
+            res.redirect('./authorize');
+        } else if (datarequester) {
+            res.redirect('./request');
+        } else {
             res.render('appChain/DataBroker/profile', { address: identity });
         }
-
     });
-    router.post('/aboutme', isAuthenticated, async (req, res) => {
-        // console.log(req.body);
-        const address = req.session.address;
+    router.get('/authorize', isAuthenticated, async (req, res) => {
+        res.render('appChain/DataBroker/authorize', { address: req.user.identity });
+    })
+
+
+    router.post('/dataprovider', async (req, res) => {
         let { pubkey, gender, age, height, weight } = req.body;
-        const newUser = new User({
+        const newProvider = new Dataprovider({
             pubkey: pubkey,
             gender: gender,
             age: age,
             height: height,
             weight: weight
         });
-        await newUser.save();
-        res.render('appChain/DataBroker/profile', { address: address });
+        await newProvider.save();
+        res.redirect('./authorize');
     });
 
     // router.get('/profile', async (req, res) => {
 
-    //     // let address = req.user.identity.toLowerCase();
-    //     // let result = await Mapping.findOne({ address: address });
-    //     // // check binding
-    //     // if (result.deviceID.length == 0) {
-    //     //     res.render('appChain/google/bind', { "address": address });
-    //     // } else {
-    //     //     // let r = await accInstance.submitTransaction('Deletekey', req.user.pubkey);
-    //     //     // console.log(r.toString());
-    //     //     // result.deviceID = [];
-    //     //     // await result.save();
+    //     let address = req.user.identity.toLowerCase();
+    //     let result = await Mapping.findOne({ address: address });
+    //     // check binding
+    //     if (result.deviceID.length == 0) {
+    //         res.render('appChain/google/bind', { "address": address });
+    //     } else {
+    //         let r = await accInstance.submitTransaction('Deletekey', req.user.pubkey);
+    //         console.log(r.toString());
+    //         result.deviceID = [];
+    //         await result.save();
 
 
-    //     //     // let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
-    //     //     // let accJson = JSON.parse(acc.toString());
-    //     //     // console.log(accJson);
-    //     // }
-
-
-    //     //return res.render("appChain/google/bind.ejs", { "address": req.user.identity });
-
-    //     let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
-    //     let accJson = JSON.parse(acc.toString())
-
-    //     // get reviewer list
-    //     // reviewerList = {};
-    //     // let reviewers = await certInstance.evaluateTransaction("getReviewer");
-    //     // reviewers = JSON.parse(reviewers.toString())
-    //     // reviewers.forEach(function (object, index, array) {
-    //     //     let value = JSON.parse(object.value)
-    //     //     reviewerList[value.pubkey] = value.reviewerName
-    //     // });
-    //     // console.log(reviewerList)
-    //     console.log(accJson);
-    //     // let reviewerList = {};
-    //     return res.render("appChain/google/review.ejs", { "acc": accJson, "contract_address": contract_address, "user": req.user.identity })
+    //         let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
+    //         let accJson = JSON.parse(acc.toString());
+    //         console.log(accJson);
+    //     }
     // });
+
+
     router.get('/logout', (req, res) => {
         req.session.destroy((err) => {
             if (err) {
