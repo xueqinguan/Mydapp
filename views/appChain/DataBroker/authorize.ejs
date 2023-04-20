@@ -1,5 +1,347 @@
 <%- include('partials/header') -%>
 
-<h1>AUTHORIZED</h1>
+<body>
+    <div class="container mt-2">
+        <div class="row mt-3">
+            <div class="col-md-10 offset-md-1">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 style="margin: 0" class="font-weight-bold">
+                            Permission Operation
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Requester Name</th>
+                                    <th scope="col">Requester public key</th>
+                                    <th scope="col">Authorized Data</th>
+                                    <th scope="col">Operation</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <button
+                            type="button"
+                            data-toggle="modal"
+                            data-target="#authorizeModal"
+                            class="btn btn-primary btn-lg btn-block authorize"
+                        >
+                            Authorize
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+
+    <div
+        class="modal fade"
+        id="authorizeModal"
+        data-backdrop="static"
+        data-keyboard="false"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Authorize</h5>
+                    <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">    
+                    <div>
+                        <label
+                            for="authorizeRange"
+                            class="form-label p-2 font-weight-bold"
+                            >Authorization fine-grained:</label
+                        >
+                        <span id="authorizeLabel"></span>
+                    </div>
+                    <input
+                        type="range"
+                        class="form-range"
+                        min="0"
+                        max="2"
+                        step="1"
+                        id="authorizeRange"
+                    />
+                    <div id="formA" class="d-none">
+                        <form action="/appChain/DataBroker/authorizeA" method="post">
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >Requester Name</span
+                                    >
+                                </div>
+                                <select class="form-select form-control" name="rqname">
+                                    <option value="" disabled selected>
+                                        Select the requester name you want to Authorize
+                                    </option>
+                                    <% for (var i = 0; i < rqNames.length; i++) { %>
+                                    <option value="<%= rqNames[i] %>">
+                                        <%= rqNames[i] %>
+                                    </option>
+                                    <% } %>
+                                </select>
+                            </div>
+
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >data type</span
+                                    >
+                                </div>
+                                <select class="form-select form-control" name="type">
+                                    <option value="" disabled selected >Select data type</option>
+                                    <option value="Heartrates" >Heart rates</optin>
+                                    <option value="Stepstaken" >Steps taken</option>
+                                    <option value="Bodytemperature">Body temperature</option>
+                                    <option value="Systolicbloodpressure" >Systolic Blood pressure</option>
+                                    <option value="Diastolicbloodpressure" >Diastolic Blood pressure</option>
+                                </select>
+                            </div>
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >start time</span
+                                    >
+                                </div>
+                                <input
+                                    type="text"
+                                    name="starttime"
+                                    placeholder=""
+                                    readonly="readonly"
+                                    class="form-control"
+                                />
+                            </div>
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >end time</span
+                                    >
+                                </div>
+                                <input
+                                    type="text"
+                                    name="endtime"
+                                    placeholder=""
+                                    readonly="readonly"
+                                    class="form-control"
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    type="submit"
+                                    value="submit"
+                                    class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
+                                />
+                            </div>
+                        </form>
+                    </div>
+                    <div id="formB" class="d-none">
+                        <form action="/appChain/DataBroker/authorizeB" method="post">
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >Requester Name</span
+                                    >
+                                </div>
+                                <select class="form-select form-control" name="rqname">
+                                    <option value="" disabled selected>
+                                        Select the requester name you want to Authorize
+                                    </option>
+                                    <% for (var i = 0; i < rqNames.length; i++) { %>
+                                    <option value="<%= rqNames[i] %>">
+                                        <%= rqNames[i] %>
+                                    </option>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >data type</span
+                                    >
+                                </div>
+                                <select class="form-select form-control" name="type">
+                                    <option value="" disabled selected >Select data type</option>
+                                    <option value="Heartrates" >Heart rates</optin>
+                                    <option value="Stepstaken" >Steps taken</option>
+                                    <option value="Bodytemperature">Body temperature</option>
+                                    <option value="Systolicbloodpressure" >Systolic Blood pressure</option>
+                                    <option value="Diastolicbloodpressure" >Diastolic Blood pressure</option>
+                                </select>
+                            </div>
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >start time</span
+                                    >
+                                </div>
+                                <input
+                                    type="text"
+                                    name="starttime"
+                                    placeholder=""
+                                    required="required"
+                                    class="form-control"
+                                />
+                            </div>
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >end time</span
+                                    >
+                                </div>
+                                <input
+                                    type="text"
+                                    name="endtime"
+                                    placeholder=""
+                                    required="required"
+                                    class="form-control"
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    type="submit"
+                                    value="submit"
+                                    class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
+                                />
+                            </div>
+                        </form>
+                    </div>
+                    <div id="formC" class="d-none">
+                        <form action="/appChain/DataBroker/authorizeC" method="post">
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >Requester Name</span
+                                    >
+                                </div>
+                                <select class="form-select form-control" name="rqname">
+                                    <option value="" disabled selected>
+                                        Select the requester name you want to Authorize
+                                    </option>
+                                    <% for (var i = 0; i < rqNames.length; i++) { %>
+                                    <option value="<%= rqNames[i] %>">
+                                        <%= rqNames[i] %>
+                                    </option>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div class="input-group mt-3">
+                                <div class="input-group-prepend">
+                                    <span id="" class="input-group-text"
+                                        >Data ID</span
+                                    >
+                                </div>
+                                <input
+                                    type="text"
+                                    name="dataID"
+                                    placeholder=""
+                                    required="required"
+                                    class="form-control"
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    type="submit"
+                                    value="submit"
+                                    class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
+                                />
+                            </div>
+                        </form>
+                    </div>
+                    <div class="row mt-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="modal fade"
+        id="revokePermission"
+        data-backdrop="static"
+        data-keyboard="false"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Inform</h5>
+                    <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Do you want to revoke the Organization
+                    <span class="font-weight-bold revokeOrgName"> </span>
+                    's access rights?
+                </div>
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-dismiss="modal"
+                    >
+                        cancel
+                    </button>
+                    <button type="button" class="revokeConfirm btn btn-primary">
+                        confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    window.onload = function () {
+        const authorizeRange = document.getElementById('authorizeRange');
+        const authorizeLabel = document.getElementById('authorizeLabel');
+
+        const formA = document.getElementById('formA');
+        const formB = document.getElementById('formB');
+        const formC = document.getElementById('formC');
+
+        authorizeRange.addEventListener('input', (e) => {
+            switch (parseInt(e.target.value)) {
+                case 0:
+                    authorizeLabel.innerHTML = 'dataTYPE';
+                    formA.classList.remove('d-none');
+                    formB.classList.add('d-none');
+                    formC.classList.add('d-none');
+                    break;
+                case 1:
+                    authorizeLabel.innerHTML = 'Time-Limited Authorization';
+                    formA.classList.add('d-none');
+                    formB.classList.remove('d-none');
+                    formC.classList.add('d-none');
+                    break;
+                case 2:
+                    authorizeLabel.innerHTML = 'dataID';
+                    formA.classList.add('d-none');
+                    formB.classList.add('d-none');
+                    formC.classList.remove('d-none');
+                    break;
+            }
+        });
+    };
+</script>
 
 <%- include('partials/footer') -%>

@@ -214,9 +214,9 @@ module.exports = function (dbconnection) {
                         // console.log(pubkey_hex);
 
                         var result = await accInstance.submitTransaction('AddPersonalAccessControl', pubkey_hex);
-                        //console.log('\x1b[33m%s\x1b[0m', result.toString());
+                        console.log('\x1b[33m%s\x1b[0m', result.toString());
 
-                        //console.log('transaction finish');
+                        console.log('transaction finish');
 
                         const mapping = new Mapping({ address: account.toLowerCase(), pubkey: pubkey_hex });
                         await mapping.save();
@@ -256,7 +256,14 @@ module.exports = function (dbconnection) {
         }
     });
     router.get('/authorize', isAuthenticated, async (req, res) => {
-        res.render('appChain/DataBroker/authorize', { address: req.user.identity });
+        const ALLdataRequesters = await DataRequester.find({}, { name: 1, _id: 0 });
+        let rqNames = ALLdataRequesters.map(rq => rq.name).sort();
+
+        res.render('appChain/DataBroker/authorize', { address: req.user.identity, rqNames: rqNames });
+    });
+
+    router.get('/request', isAuthenticated, async (req, res) => {
+        res.render('appChain/DataBroker/request', { address: req.user.identity });
     })
 
 
@@ -272,6 +279,29 @@ module.exports = function (dbconnection) {
         await newProvider.save();
         res.redirect('./authorize');
     });
+
+    router.post('/datarequester', async (req, res) => {
+        let { pubkey, rqname } = req.body;
+        const newRequester = new DataRequester({
+            pubkey: pubkey,
+            name: rqname
+        });
+        await newRequester.save();
+        res.redirect('./request');
+    });
+
+    router.post('/authorizeA', async (req, res) => {
+        console.log(req.body);
+    });
+
+    router.post('/authorizeB', async (req, res) => {
+        console.log(req.body);
+    });
+
+    router.post('/authorizeC', async (req, res) => {
+        console.log(req.body);
+    });
+
 
     // router.get('/profile', async (req, res) => {
 
