@@ -259,7 +259,7 @@ module.exports = function (dbconnection) {
         const ALLdataRequesters = await DataRequester.find({}, { name: 1, _id: 0 });
         let rqNames = ALLdataRequesters.map(rq => rq.name).sort();
 
-        res.render('appChain/DataBroker/authorize', { address: req.user.identity, rqNames: rqNames });
+        res.render('appChain/DataBroker/authorize', { address: req.user.identity, rqNames: rqNames, contract_address: contract_address });
     });
 
     router.get('/request', isAuthenticated, async (req, res) => {

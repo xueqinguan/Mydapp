@@ -59,7 +59,7 @@
                     </button>
                 </div>
 
-                <div class="modal-body">    
+                <div class="modal-body">
                     <div>
                         <label
                             for="authorizeRange"
@@ -77,189 +77,203 @@
                         id="authorizeRange"
                     />
                     <div id="formA" class="d-none">
-                        <form action="/appChain/DataBroker/authorizeA" method="post">
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >Requester Name</span
-                                    >
-                                </div>
-                                <select class="form-select form-control" name="rqname">
-                                    <option value="" disabled selected>
-                                        Select the requester name you want to Authorize
-                                    </option>
-                                    <% for (var i = 0; i < rqNames.length; i++) { %>
-                                    <option value="<%= rqNames[i] %>">
-                                        <%= rqNames[i] %>
-                                    </option>
-                                    <% } %>
-                                </select>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >Requester Name</span
+                                >
                             </div>
-
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >data type</span
-                                    >
-                                </div>
-                                <select class="form-select form-control" name="type">
-                                    <option value="" disabled selected >Select data type</option>
-                                    <option value="Heartrates" >Heart rates</optin>
-                                    <option value="Stepstaken" >Steps taken</option>
-                                    <option value="Bodytemperature">Body temperature</option>
-                                    <option value="Systolicbloodpressure" >Systolic Blood pressure</option>
-                                    <option value="Diastolicbloodpressure" >Diastolic Blood pressure</option>
-                                </select>
+                            <select
+                                class="form-select form-control"
+                                id="rqname_A"
+                            >
+                                <option value="" disabled selected>
+                                    Select the requester name you want to
+                                    Authorize
+                                </option>
+                                <% for (var i = 0; i < rqNames.length; i++) { %>
+                                <option value="<%= rqNames[i] %>">
+                                    <%= rqNames[i] %>
+                                </option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >data type</span
+                                >
                             </div>
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >start time</span
-                                    >
-                                </div>
-                                <input
-                                    type="text"
-                                    name="starttime"
-                                    placeholder=""
-                                    readonly="readonly"
-                                    class="form-control"
-                                />
+                            <select
+                                class="form-select form-control"
+                                id="data_A"
+                            >
+                                <option value="" disabled selected>
+                                    Select data type
+                                </option>
+                                <option value="Heartrates">Heart rates</option>
+                                <option value="Stepstaken">Steps taken</option>
+                                <option value="Bodytemperature">
+                                    Body temperature
+                                </option>
+                                <option value="Systolicbloodpressure">
+                                    Systolic Blood pressure
+                                </option>
+                                <option value="Diastolicbloodpressure">
+                                    Diastolic Blood pressure
+                                </option>
+                            </select>
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >start time</span
+                                >
                             </div>
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >end time</span
-                                    >
-                                </div>
-                                <input
-                                    type="text"
-                                    name="endtime"
-                                    placeholder=""
-                                    readonly="readonly"
-                                    class="form-control"
-                                />
+                            <input
+                                type="text"
+                                placeholder=""
+                                readonly="readonly"
+                                class="form-control"
+                            />
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >end time</span
+                                >
                             </div>
-                            <div>
-                                <input
-                                    type="submit"
-                                    value="submit"
-                                    class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
-                                />
-                            </div>
-                        </form>
+                            <input
+                                type="text"
+                                placeholder=""
+                                readonly="readonly"
+                                class="form-control"
+                            />
+                        </div>
                     </div>
-                    <div id="formB" class="d-none">
-                        <form action="/appChain/DataBroker/authorizeB" method="post">
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >Requester Name</span
-                                    >
-                                </div>
-                                <select class="form-select form-control" name="rqname">
-                                    <option value="" disabled selected>
-                                        Select the requester name you want to Authorize
-                                    </option>
-                                    <% for (var i = 0; i < rqNames.length; i++) { %>
-                                    <option value="<%= rqNames[i] %>">
-                                        <%= rqNames[i] %>
-                                    </option>
-                                    <% } %>
-                                </select>
+                    <div id="formB" class="">
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >Requester Name</span
+                                >
                             </div>
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >data type</span
-                                    >
-                                </div>
-                                <select class="form-select form-control" name="type">
-                                    <option value="" disabled selected >Select data type</option>
-                                    <option value="Heartrates" >Heart rates</optin>
-                                    <option value="Stepstaken" >Steps taken</option>
-                                    <option value="Bodytemperature">Body temperature</option>
-                                    <option value="Systolicbloodpressure" >Systolic Blood pressure</option>
-                                    <option value="Diastolicbloodpressure" >Diastolic Blood pressure</option>
-                                </select>
+                            <select
+                                class="form-select form-control"
+                                id="rqname_B"
+                            >
+                                <option value="" disabled selected>
+                                    Select the requester name you want to
+                                    Authorize
+                                </option>
+                                <% for (var i = 0; i < rqNames.length; i++) { %>
+                                <option value="<%= rqNames[i] %>">
+                                    <%= rqNames[i] %>
+                                </option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >data type</span
+                                >
                             </div>
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >start time</span
-                                    >
-                                </div>
-                                <input
-                                    type="text"
-                                    name="starttime"
-                                    placeholder=""
-                                    required="required"
-                                    class="form-control"
-                                />
+                            <select
+                                class="form-select form-control"
+                                id="data_B"
+                            >
+                                <option value="" disabled selected>
+                                    Select data type
+                                </option>
+                                <option value="Heartrates">Heart rates</option>
+                                <option value="Stepstaken">Steps taken</option>
+                                <option value="Bodytemperature">
+                                    Body temperature
+                                </option>
+                                <option value="Systolicbloodpressure">
+                                    Systolic Blood pressure
+                                </option>
+                                <option value="Diastolicbloodpressure">
+                                    Diastolic Blood pressure
+                                </option>
+                            </select>
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >start time</span
+                                >
                             </div>
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >end time</span
-                                    >
-                                </div>
-                                <input
-                                    type="text"
-                                    name="endtime"
-                                    placeholder=""
-                                    required="required"
-                                    class="form-control"
-                                />
+                            <input
+                                id="starttime"
+                                type="text"
+                                name="starttime"
+                                placeholder=""
+                                required="required"
+                                class="form-control"
+                            />
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >end time</span
+                                >
                             </div>
-                            <div>
-                                <input
-                                    type="submit"
-                                    value="submit"
-                                    class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
-                                />
-                            </div>
-                        </form>
+                            <input
+                                id="endtime"
+                                type="text"
+                                name="endtime"
+                                placeholder=""
+                                required="required"
+                                class="form-control"
+                            />
+                        </div>
                     </div>
                     <div id="formC" class="d-none">
-                        <form action="/appChain/DataBroker/authorizeC" method="post">
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >Requester Name</span
-                                    >
-                                </div>
-                                <select class="form-select form-control" name="rqname">
-                                    <option value="" disabled selected>
-                                        Select the requester name you want to Authorize
-                                    </option>
-                                    <% for (var i = 0; i < rqNames.length; i++) { %>
-                                    <option value="<%= rqNames[i] %>">
-                                        <%= rqNames[i] %>
-                                    </option>
-                                    <% } %>
-                                </select>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >Requester Name</span
+                                >
                             </div>
-                            <div class="input-group mt-3">
-                                <div class="input-group-prepend">
-                                    <span id="" class="input-group-text"
-                                        >Data ID</span
-                                    >
-                                </div>
-                                <input
-                                    type="text"
-                                    name="dataID"
-                                    placeholder=""
-                                    required="required"
-                                    class="form-control"
-                                />
+                            <select
+                                class="form-select form-control"
+                                id="rqname_C"
+                            >
+                                <option value="" disabled selected>
+                                    Select the requester name you want to
+                                    Authorize
+                                </option>
+                                <% for (var i = 0; i < rqNames.length; i++) { %>
+                                <option value="<%= rqNames[i] %>">
+                                    <%= rqNames[i] %>
+                                </option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >Data ID</span
+                                >
                             </div>
-                            <div>
-                                <input
-                                    type="submit"
-                                    value="submit"
-                                    class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
-                                />
-                            </div>
-                        </form>
+                            <input
+                                id="data_C"
+                                type="text"
+                                placeholder=""
+                                required="required"
+                                class="form-control"
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <input
+                            id="authorizeSubmit"
+                            type="submit"
+                            value="submit"
+                            class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
+                        />
                     </div>
                     <div class="row mt-1"></div>
                 </div>
@@ -311,6 +325,49 @@
 </body>
 
 <script>
+    var identityManagerABI, personalIdentityABI;
+    var account;
+    var contract_address = '<%= contract_address %>';
+    const preventMalleability = (sig, ecdsa) => {
+        const halfOrder = ecdsa.n.shrn(1);
+        if (sig.s.cmp(halfOrder) === 1) {
+            const bigNum = ecdsa.n;
+            sig.s = bigNum.sub(sig.s);
+        }
+        return sig;
+    };
+
+    function sign(privateKey, digest) {
+        const signKey = ecdsa.keyFromPrivate(privateKey, 'hex');
+        const sig = ecdsa.sign(Buffer.from(digest, 'hex'), signKey);
+        var halfOrderSig = preventMalleability(sig, ecdsa);
+        const signature = Buffer.from(halfOrderSig.toDER());
+        var signature_string = '';
+        for (var i = 0; i < signature.length; i++) {
+            signature_string += signature[i].toString();
+            signature_string += '/';
+        }
+        signature_string = signature_string.slice(0, -1);
+        return signature_string;
+    }
+
+    function ajaxAwait(url, data) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: 'POST',
+                url: url,
+                dataType: 'json',
+                data: data,
+                success: function (res) {
+                    resolve(res);
+                },
+                fail: function (xhr, ajaxOptions, thrownError) {
+                    reject(false);
+                },
+            });
+        });
+    }
+
     window.onload = function () {
         const authorizeRange = document.getElementById('authorizeRange');
         const authorizeLabel = document.getElementById('authorizeLabel');
@@ -342,6 +399,71 @@
             }
         });
     };
+
+    async function buildListener() {
+        var identityManagerInstance = new web3.eth.Contract(
+            identityManagerABI,
+            contract_address
+        );
+        var personalIdentityAddress = await identityManagerInstance.methods
+            .getAccessManagerAddress(account)
+            .call({ from: account });
+        var personalIdentityInstance = new web3.eth.Contract(
+            personalIdentityABI,
+            personalIdentityAddress
+        );
+        $('.authorizeSubmit').on('click', async function (e) {
+            e.preventDefault();
+
+            // 取得使用者拉霸的值
+            var authorizeValue = $('#authorizeRange').val();
+
+            // 根據使用者拉霸的值來決定要讀取哪個表單的資料
+            var rqname, data, starttime, endtime;
+
+            switch (authorizeValue) {
+                case '0':
+                    rqname = $('#rqname_A').val();
+                    data = $('#data_A').val();
+                    starttime = 0;
+                    endtime = -1;
+                    break;
+                case '1':
+                    rqname = $('#rqname_B').val();
+                    data = $('#data_B').val();
+                    starttime = $('#starttime').val();
+                    endtime = $('#endtime').val();
+                    break;
+                case '2':
+                    rqname = $('#rqname_C').val();
+                    data = $('#data_C').val();
+                    starttime = 0;
+                    endtime = -1;
+                    break;
+            }
+        });
+    }
+
+    async function main() {
+        let accounts = await web3.eth.getAccounts();
+        account = accounts[0];
+        identityManagerABI = await fetch(
+            '../../contracts/IdentityManager.json'
+        );
+        personalIdentityABI = await fetch(
+            '../../contracts/PersonalIdentity.json'
+        );
+        identityManagerABI = await identityManagerABI.json();
+        identityManagerABI = identityManagerABI.abi;
+        personalIdentityABI = await personalIdentityABI.json();
+        personalIdentityABI = personalIdentityABI.abi;
+
+        // console.log('identityManagerABI = '+JSON.stringify(identityManagerABI));
+        // console.log('personalIdentityABI = '+JSON.stringify(personalIdentityABI));
+
+        buildListener();
+    }
+    main();
 </script>
 
 <%- include('partials/footer') -%>
