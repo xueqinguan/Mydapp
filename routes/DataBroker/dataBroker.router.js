@@ -268,9 +268,11 @@ module.exports = function (dbconnection) {
         }
     });
     router.get('/authorize', isAuthenticated, async (req, res) => {
-        const ALLdataRequesters = await DataRequester.find({}, { name: 1, _id: 0 });
-        let rqNames = ALLdataRequesters.map(rq => rq.name).sort();
-
+        let ALLdataRequesters = await DataRequester.find({}, { name: 1, address: 1, _id: 0 });
+        ALLdataRequesters = ALLdataRequesters.sort((a, b) => {
+            return a.name.localeCompare(b.name);
+        });
+        //console.log(ALLdataRequesters);
         let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
         let accJson = JSON.parse(acc.toString());
         const permissionData = accJson.Permission;
@@ -307,7 +309,7 @@ module.exports = function (dbconnection) {
 
         //console.log(permissionDataArray);
 
-        res.render('appChain/DataBroker/authorize', { address: req.user.identity, rqNames: rqNames, contract_address: contract_address, permissionData: permissionDataArray });
+        res.render('appChain/DataBroker/authorize', { address: req.user.identity, ALLdataRequesters: ALLdataRequesters, contract_address: contract_address, permissionData: permissionDataArray });
     });
 
     router.get('/request', isAuthenticated, async (req, res) => {
@@ -332,6 +334,7 @@ module.exports = function (dbconnection) {
         let { pubkey, rqname } = req.body;
         const newRequester = new DataRequester({
             pubkey: pubkey,
+            address: req.user.identity,
             name: rqname
         });
         await newRequester.save();
@@ -356,6 +359,18 @@ module.exports = function (dbconnection) {
             return res.send({ 'error': "error", "result": e })
         }
     });
+
+    router.post("/revokePermission", isAuthenticated, async function (req, res) {
+        let { rqname, data } = req.body;
+        try {
+            const digest = await createTransaction(req.user.identity, 'RevokePermission', rqname, data);
+            return res.send({ 'digest': digest })
+        }
+        catch (e) {
+            console.log(e)
+            return res.send({ 'error': "error", "result": e })
+        }
+    })
 
     router.post("/proposalAndCreateCommit", isAuthenticated, async function (req, res) {
         try {

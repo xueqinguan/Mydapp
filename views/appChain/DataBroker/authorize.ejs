@@ -5,7 +5,10 @@
             <div class="col-md-10 offset-md-1">
                 <div class="card">
                     <div class="card-header">
-                        <h4 style="margin: 0" class="font-weight-bold">
+                        <h4
+                            style="margin: 0; text-align: center"
+                            class="font-weight-bold"
+                        >
                             Permission Operation
                         </h4>
                     </div>
@@ -21,7 +24,7 @@
                             <thead>
                                 <tr>
                                     <th>requestName</th>
-                                    <th>authorized data</th>
+                                    <th>authorized data / type</th>
                                     <th>authorized time</th>
                                     <th>operation</th>
                                 </tr>
@@ -32,7 +35,12 @@
                                 authorizedData.forEach(({dataType, startTime,
                                 endTime, operation}) => { %>
                                 <tr>
-                                    <td><%= requestName %></td>
+                                    <td>
+                                        <%= ALLdataRequesters.find(rq =>
+                                        rq.address === requestName)?.name ||
+                                        requestName %>
+                                    </td>
+
                                     <td><%= dataType %></td>
                                     <td
                                         class="<%= startTime === '0' && endTime === '-1' ? 'empty-cell' : '' %>"
@@ -125,9 +133,12 @@
                                     Select the requester name you want to
                                     Authorize
                                 </option>
-                                <% for (var i = 0; i < rqNames.length; i++) { %>
-                                <option value="<%= rqNames[i] %>">
-                                    <%= rqNames[i] %>
+                                <% for (var i = 0; i < ALLdataRequesters.length;
+                                i++) { %>
+                                <option
+                                    value="<%= ALLdataRequesters[i].name %>"
+                                >
+                                    <%= ALLdataRequesters[i].name %>
                                 </option>
                                 <% } %>
                             </select>
@@ -200,9 +211,12 @@
                                     Select the requester name you want to
                                     Authorize
                                 </option>
-                                <% for (var i = 0; i < rqNames.length; i++) { %>
-                                <option value="<%= rqNames[i] %>">
-                                    <%= rqNames[i] %>
+                                <% for (var i = 0; i < ALLdataRequesters.length;
+                                i++) { %>
+                                <option
+                                    value="<%= ALLdataRequesters[i].name %>"
+                                >
+                                    <%= ALLdataRequesters[i].name %>
                                 </option>
                                 <% } %>
                             </select>
@@ -279,9 +293,12 @@
                                     Select the requester name you want to
                                     Authorize
                                 </option>
-                                <% for (var i = 0; i < rqNames.length; i++) { %>
-                                <option value="<%= rqNames[i] %>">
-                                    <%= rqNames[i] %>
+                                <% for (var i = 0; i < ALLdataRequesters.length;
+                                i++) { %>
+                                <option
+                                    value="<%= ALLdataRequesters[i].name %>"
+                                >
+                                    <%= ALLdataRequesters[i].name %>
                                 </option>
                                 <% } %>
                             </select>
@@ -314,54 +331,15 @@
             </div>
         </div>
     </div>
-
-    <div
-        class="modal fade"
-        id="revokePermission"
-        data-backdrop="static"
-        data-keyboard="false"
-        tabindex="-1"
-        aria-hidden="true"
-    >
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Inform</h5>
-                    <button
-                        type="button"
-                        class="close"
-                        data-dismiss="modal"
-                        aria-label="Close"
-                    >
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Do you want to revoke the Organization
-                    <span class="font-weight-bold revokeOrgName"> </span>
-                    's access rights?
-                </div>
-                <div class="modal-footer">
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-dismiss="modal"
-                    >
-                        cancel
-                    </button>
-                    <button type="button" class="revokeConfirm btn btn-primary">
-                        confirm
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 
 <script>
     var identityManagerABI, personalIdentityABI;
     var account;
     var contract_address = '<%= contract_address %>';
+    const ALLdataRequesters = JSON.parse(
+        '<%- JSON.stringify(ALLdataRequesters) %>'
+    );
     const preventMalleability = (sig, ecdsa) => {
         const halfOrder = ecdsa.n.shrn(1);
         if (sig.s.cmp(halfOrder) === 1) {
@@ -477,12 +455,17 @@
                     endtime = -1;
                     break;
             }
-
+            // 在 ALLdataRequesters 中找到對應的物件
+            const selectedRequester = ALLdataRequesters.find(
+                (rq) => rq.name === rqname
+            );
+            // 獲取該物件的 address 欄位
+            const selectedAddress = selectedRequester.address;
             let response, result;
             response = await ajaxAwait(
                 '/appChain/DataBroker/updatePermission',
                 {
-                    rqname: rqname,
+                    rqname: selectedAddress,
                     data: data,
                     starttime: starttime,
                     endtime: endtime,
@@ -519,16 +502,56 @@
                 return alert(`error: ${response.result}`);
             }
 
-            // what the fuck alert?!
             if (alert(`${result}`)) {
-            } else window.location.reload();
+                window.location.reload();
+            }
+            window.location.reload();
         });
 
         $('.revoke').on('click', async function (e) {
             const rqname = $(this).data('requestname');
             const data = $(this).data('authorizeddata');
-            console.log(rqname);
-            console.log(data);
+
+            let encryptKey = await personalIdentityInstance.methods
+                .getEncryptMaterial('HLFPrivateKey')
+                .call({ from: account });
+            let privateKey = await ethereum.request({
+                method: 'eth_decrypt',
+                params: [encryptKey, account],
+            });
+            let signature_string, response, result;
+
+            response = await ajaxAwait(
+                '/appChain/DataBroker/revokePermission',
+                { rqname: rqname, data: data }
+            );
+            if (response.error) {
+                return alert(`error :${response.result}`);
+            }
+
+            signature_string = sign(privateKey, response.digest);
+            response = await ajaxAwait(
+                '/appChain/DataBroker/proposalAndCreateCommit',
+                { signature: signature_string, func: 'RevokePermission' }
+            );
+            if (response.error) {
+                return alert(`error :${response.result}`);
+            }
+            result = response.result;
+
+            signature_string = sign(privateKey, response.commitDigest);
+            response = await ajaxAwait('/appChain/DataBroker/commitSend', {
+                signature: signature_string,
+                func: 'RevokePermission',
+            });
+            if (response.error) {
+                return alert(`error: ${response.result}`);
+            }
+
+            if (alert(`${result}`)) {
+                window.location.reload();
+            }
+            window.location.reload();
         });
     }
 
