@@ -1,5 +1,4 @@
 <%- include('partials/header') -%>
-
 <body>
     <div class="container mt-2">
         <div class="row mt-3">
@@ -11,17 +10,52 @@
                         </h4>
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered">
+                        <table
+                            class="table table-bordered"
+                            style="
+                                font-size: 18px;
+                                text-align: center;
+                                vertical-align: middle;
+                            "
+                        >
                             <thead>
                                 <tr>
-                                    <th scope="col">Requester Name</th>
-                                    <th scope="col">Requester public key</th>
-                                    <th scope="col">Authorized Data</th>
-                                    <th scope="col">Operation</th>
+                                    <th>requestName</th>
+                                    <th>authorized data</th>
+                                    <th>authorized time</th>
+                                    <th>operation</th>
                                 </tr>
                             </thead>
-                            <tbody></tbody>
+                            <tbody>
+                                <% permissionData.forEach(({requestName,
+                                authorizedData}) => { %> <%
+                                authorizedData.forEach(({dataType, startTime,
+                                endTime, operation}) => { %>
+                                <tr>
+                                    <td><%= requestName %></td>
+                                    <td><%= dataType %></td>
+                                    <td
+                                        class="<%= startTime === '0' && endTime === '-1' ? 'empty-cell' : '' %>"
+                                    >
+                                        <% if (startTime !== '0' || endTime !==
+                                        '-1') { %> <%= startTime %> - <%=
+                                        endTime %> <% } %>
+                                    </td>
+
+                                    <td>
+                                        <button
+                                            class="revoke btn btn-danger"
+                                            data-requestname="<%= requestName %>"
+                                            data-authorizeddata="<%= dataType %>"
+                                        >
+                                            revoke
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% }); %> <% }); %>
+                            </tbody>
                         </table>
+
                         <button
                             type="button"
                             data-toggle="modal"
@@ -359,9 +393,11 @@
                 dataType: 'json',
                 data: data,
                 success: function (res) {
+                    console.log('success');
                     resolve(res);
                 },
                 fail: function (xhr, ajaxOptions, thrownError) {
+                    console.log('fail');
                     reject(false);
                 },
             });
@@ -441,6 +477,58 @@
                     endtime = -1;
                     break;
             }
+
+            let response, result;
+            response = await ajaxAwait(
+                '/appChain/DataBroker/updatePermission',
+                {
+                    rqname: rqname,
+                    data: data,
+                    starttime: starttime,
+                    endtime: endtime,
+                }
+            );
+            console.log('response = ' + response);
+            if (response.error) {
+                return alert(`error :${response.result}`);
+            }
+            let encryptKey = await personalIdentityInstance.methods
+                .getEncryptMaterial('HLFPrivateKey')
+                .call({ from: account });
+            let privateKey = await ethereum.request({
+                method: 'eth_decrypt',
+                params: [encryptKey, account],
+            });
+            let signature_string;
+            signature_string = sign(privateKey, response.digest);
+            response = await ajaxAwait(
+                '/appChain/DataBroker/proposalAndCreateCommit',
+                { signature: signature_string, func: 'UpdatePermission' }
+            );
+            if (response.error) {
+                return alert(`error :${response.result}`);
+            }
+
+            result = response.result;
+            signature_string = sign(privateKey, response.commitDigest);
+            response = await ajaxAwait('/appChain/DataBroker/commitSend', {
+                signature: signature_string,
+                func: 'UpdatePermission',
+            });
+            if (response.error) {
+                return alert(`error: ${response.result}`);
+            }
+
+            // what the fuck alert?!
+            if (alert(`${result}`)) {
+            } else window.location.reload();
+        });
+
+        $('.revoke').on('click', async function (e) {
+            const rqname = $(this).data('requestname');
+            const data = $(this).data('authorizeddata');
+            console.log(rqname);
+            console.log(data);
         });
     }
 
@@ -463,6 +551,7 @@
 
         buildListener();
     }
+
     main();
 </script>
 

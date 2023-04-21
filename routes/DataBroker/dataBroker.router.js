@@ -4,6 +4,9 @@ const fs = require('fs');
 const router = express.Router();
 const openssl = require('openssl-nodejs');
 
+const CircularJSON = require('circular-json');
+
+
 
 // session
 const passport = require('passport');
@@ -21,15 +24,20 @@ const Web3 = require('web3');
 const web3 = new Web3(new Web3.providers.WebsocketProvider(config.web3_provider));
 
 //fabric SDK and Util
+const fabric_common = require("fabric-common");
 const { Gateway, Wallets } = require('fabric-network');
 const FabricCAServices = require('fabric-ca-client');
-const { buildCAClient, enrollAdmin, registerAndEnrollUser, getAdminIdentity } = require('../../util/CAUtil');
+const { buildCAClient, enrollAdmin, registerAndEnrollUser, getAdminIdentity, buildCertUser } = require('../../util/CAUtil');
 const { buildCCPOrg1, buildWallet } = require('../../util/AppUtil');
 
 // node version should up to 14
 const { ethers } = require('ethers');
 const { decrypt, encrypt } = require("eth-sig-util");
 
+
+//hash function
+var cryptoSuite = fabric_common.Utils.newCryptoSuite()
+var hashFunction = cryptoSuite.hash.bind(cryptoSuite)
 
 const require_signature = "databroker?nonce:666";
 
@@ -39,6 +47,9 @@ var wallet;
 var mspDatabroker;
 var gateway;
 var adminUser;
+
+var updatePermission = {};
+var revokePermission = {};
 
 
 
@@ -93,7 +104,7 @@ module.exports = function (dbconnection) {
         await gateway.connect(ccp, {
             wallet,
             identity: 'databroker',
-            discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gatewayOrg2 is using a fabric network deployed locally
+            discovery: { enabled: true, asLocalhost: true }
         });
 
         accChannel = await gateway.getNetwork('acc-channel');
@@ -138,6 +149,7 @@ module.exports = function (dbconnection) {
 
 
         let identityManagerInstance = new web3.eth.Contract(identityManager.abi, contract_address);
+
 
         if (identity) {
             // Verify from the database whether the user is logging in for the first time
@@ -205,7 +217,7 @@ module.exports = function (dbconnection) {
                             mspId: mspOrg1,
                             type: 'X.509',
                         };
-                        await wallet.put(CN, x509Identity);
+                        await wallet.put(address, x509Identity);
                         console.log('\x1b[33m%s\x1b[0m', "create x509 cert successfully.");
                     } catch (error) {
                         console.log('\x1b[33m%s\x1b[0m', `${CN} already register in ca`);
@@ -259,7 +271,43 @@ module.exports = function (dbconnection) {
         const ALLdataRequesters = await DataRequester.find({}, { name: 1, _id: 0 });
         let rqNames = ALLdataRequesters.map(rq => rq.name).sort();
 
-        res.render('appChain/DataBroker/authorize', { address: req.user.identity, rqNames: rqNames, contract_address: contract_address });
+        let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
+        let accJson = JSON.parse(acc.toString());
+        const permissionData = accJson.Permission;
+
+        const result = [];
+
+        for (const requestName in permissionData) {
+            const authorizedData = permissionData[requestName];
+            const authorizedDataList = [];
+
+            for (const dataType in authorizedData) {
+                const timeRange = authorizedData[dataType];
+                authorizedDataList.push({
+                    dataType,
+                    startTime: timeRange.startTime,
+                    endTime: timeRange.endTime
+                });
+            }
+
+            result.push({
+                requestName,
+                authorizedData: authorizedDataList
+            });
+        }
+        const permissionDataArray = Object.entries(permissionData).map(([requestName, authorizedData]) => {
+            const authorizedDataArray = Object.entries(authorizedData).map(([dataType, { startTime, endTime }]) => ({
+                dataType,
+                startTime,
+                endTime,
+                operation: 'revoke'
+            }));
+            return { requestName, authorizedData: authorizedDataArray };
+        });
+
+        //console.log(permissionDataArray);
+
+        res.render('appChain/DataBroker/authorize', { address: req.user.identity, rqNames: rqNames, contract_address: contract_address, permissionData: permissionDataArray });
     });
 
     router.get('/request', isAuthenticated, async (req, res) => {
@@ -290,17 +338,198 @@ module.exports = function (dbconnection) {
         res.redirect('./request');
     });
 
-    router.post('/authorizeA', async (req, res) => {
-        console.log(req.body);
+    router.post("/updatePermission", isAuthenticated, async function (req, res) {
+        let { rqname, data, starttime, endtime } = req.body;
+
+        try {
+            let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
+            let accJson = JSON.parse(acc.toString());
+
+
+            // check orgPubkey exist
+            //  async UpdatePermission(ctx, dataRequesterName, dataType, startTime = 0, endTime = -1) {
+
+            const digest = await createTransaction(req.user.identity, 'UpdatePermission', rqname, data, starttime, endtime);
+            return res.send({ 'digest': digest });
+        } catch (e) {
+            console.log('e = ' + e)
+            return res.send({ 'error': "error", "result": e })
+        }
     });
 
-    router.post('/authorizeB', async (req, res) => {
-        console.log(req.body);
+    router.post("/proposalAndCreateCommit", isAuthenticated, async function (req, res) {
+        try {
+            let { signature, func } = req.body;
+            let signature_buffer = convertSignature(signature)
+            let response = await proposalAndCreateCommit(req.user.identity, func, signature_buffer)
+            console.log(response)
+            return res.send(response)
+
+        } catch (error) {
+            console.log(error)
+            return res.send(error)
+        }
     });
 
-    router.post('/authorizeC', async (req, res) => {
-        console.log(req.body);
-    });
+    router.post("/commitSend", isAuthenticated, async function (req, res) {
+        try {
+            let { signature, func } = req.body;
+            let signature_buffer = convertSignature(signature);
+            let response = await commitSend(req.user.identity, func, signature_buffer);
+            console.log(response)
+            return res.send(response)
+        } catch (error) {
+            console.log(error)
+            return res.send(error)
+        }
+    })
+
+    async function createTransaction() {
+        // parameter 0 is user identity
+        // parameter 1 is chaincode function Name
+        // parameter 2 to end is chaincode function parameter
+        var user = await buildCertUser(wallet, fabric_common, arguments[0]);
+        var userContext = gateway.client.newIdentityContext(user);
+
+
+        var endorsementStore;
+        //console.log('arguments[1] = ' + arguments[1]);
+        switch (arguments[1]) {
+            case 'UpdatePermission':
+                endorsementStore = updatePermission;
+                break;
+            case 'RevokePermission':
+                endorsementStore = revokePermission;
+                break;
+        }
+        var paras = [];
+        for (var i = 2; i < arguments.length; i++) {
+            paras.push(arguments[i])
+        }
+        var endorsement = accChannel.channel.newEndorsement('AccessControlManager');
+        var build_options = { fcn: arguments[1], args: paras, generateTransactionId: true };
+        var proposalBytes = endorsement.build(userContext, build_options);
+        const digest = hashFunction(proposalBytes);
+        endorsementStore[arguments[0]] = endorsement;
+
+        return new Promise(function (reslove, reject) {
+            reslove(digest);
+        })
+    };
+
+    async function proposalAndCreateCommit() {
+        // parameter 0 is user identity
+        // parameter 1 is chaincode function Name
+        // parameter 2 is signature
+
+        var endorsementStore;
+        switch (arguments[1]) {
+            case 'UpdatePermission':
+                endorsementStore = updatePermission
+                break;
+            case 'RevokePermission':
+                endorsementStore = revokePermission
+                break;
+        }
+        if (typeof (endorsementStore) == "undefined") {
+            return new Promise(function (reslove, reject) {
+                reject({
+                    'error': true,
+                    'result': "func dosen't exist."
+                });
+            })
+        }
+
+        // console.log('endorsementStore = ' + JSON.stringify(endorsementStore[arguments[0]]));
+
+        let endorsement = endorsementStore[arguments[0]];
+        endorsement.sign(arguments[2]);
+        let proposalResponses = await endorsement.send({ targets: accChannel.channel.getEndorsers() });
+        // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
+        // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));
+        // console.log('proposalResponses.responses[0].response.status = ' + proposalResponses.responses[0].response.status);
+        if (proposalResponses.responses[0].response.status == 200) {
+            let user = await buildCertUser(wallet, fabric_common, arguments[0]);
+            let userContext = gateway.client.newIdentityContext(user)
+
+            let commit = endorsement.newCommit();
+            let commitBytes = commit.build(userContext)
+            let commitDigest = hashFunction(commitBytes)
+            let result = proposalResponses.responses[0].response.payload.toString();
+            endorsementStore[arguments[0]] = commit;
+
+            return new Promise(function (reslove, reject) {
+                reslove({
+                    'commitDigest': commitDigest,
+                    'result': result
+                });
+            })
+        }
+        else {
+            return new Promise(function (reslove, reject) {
+                reject({
+                    'error': true,
+                    'result': proposalResponses.responses[0].response.message
+                });
+            })
+        }
+    };
+
+    async function commitSend() {
+        // parameter 0 is user identity
+        // parameter 1 is chaincode function Name
+        // parameter 2 is signature
+
+        var endorsementStore;
+        switch (arguments[1]) {
+            case 'UpdatePermission':
+                endorsementStore = updatePermission;
+                break;
+            case 'RevokePermission':
+                endorsementStore = revokePermission;
+                break;
+        }
+        if (typeof (endorsementStore) == "undefined") {
+            return new Promise(function (reslove, reject) {
+                reject({
+                    'error': true,
+                    'result': "func doesn't exist."
+                });
+            })
+        }
+        let commit = endorsementStore[arguments[0]]
+        commit.sign(arguments[2])
+        let commitSendRequest = {};
+        commitSendRequest.requestTimeout = 300000
+        commitSendRequest.targets = accChannel.channel.getCommitters();
+        let commitResponse = await commit.send(commitSendRequest);
+
+        if (commitResponse['status'] == "SUCCESS") {
+            return new Promise(function (reslove, reject) {
+                reslove({
+                    'result': true
+                });
+            })
+        }
+        else {
+            return new Promise(function (reslove, reject) {
+                reject({
+                    'error': true,
+                    'result': "commit error"
+                });
+            })
+        }
+    }
+
+    function convertSignature(signature) {
+        signature = signature.split("/");
+        let signature_array = new Uint8Array(signature.length);
+        for (var i = 0; i < signature.length; i++) {
+            signature_array[i] = parseInt(signature[i])
+        }
+        let signature_buffer = Buffer.from(signature_array)
+        return signature_buffer;
+    }
 
 
     // router.get('/profile', async (req, res) => {

@@ -16,6 +16,19 @@ const adminUserPasswd = 'adminpw';
  * @param {*} FabricCAServices
  * @param {*} ccp
  */
+
+exports.buildCertUser = async (wallet, fabric_common, user_name) => {
+    // Create user with only certificate (pubkey)
+    let cryptoSuite = fabric_common.Utils.newCryptoSuite();
+    let user_json = await wallet.get(user_name);
+    let pubKey = await cryptoSuite.createKeyFromRaw(user_json.credentials.certificate);
+    let identity = new fabric_common.Identity(user_json.credentials.certificate, pubKey, user_json.mspId, cryptoSuite);
+    let user = new fabric_common.User(user_name);
+
+    user._cryptoSuite = cryptoSuite;
+    user._identity = identity
+    return user
+}
 exports.buildCAClient = (FabricCAServices, ccp, caHostName) => {
     // Create a new CA client for interacting with the CA.
     const caInfo = ccp.certificateAuthorities[caHostName]; //lookup CA details from config
