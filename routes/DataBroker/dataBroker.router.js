@@ -4,10 +4,6 @@ const fs = require('fs');
 const router = express.Router();
 const openssl = require('openssl-nodejs');
 
-const CircularJSON = require('circular-json');
-
-
-
 // session
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
@@ -50,6 +46,8 @@ var adminUser;
 
 var updatePermission = {};
 var revokePermission = {};
+
+var authorizedList = {};
 
 
 
@@ -109,6 +107,8 @@ module.exports = function (dbconnection) {
 
         accChannel = await gateway.getNetwork('acc-channel');
         accInstance = await accChannel.getContract('AccessControlManager');
+
+        UpdateAuthorizeList();
     }
 
     var isAuthenticated = function (req, res, next) {
@@ -130,6 +130,7 @@ module.exports = function (dbconnection) {
             return done(null, { 'identity': username.toLowerCase(), 'pubkey': req.pubkey, 'userType': req.userType });
         }
     }));
+
     router.get('/', (req, res) => {
         res.render('appChain/DataBroker/homepage', { 'require_signature': require_signature, 'contract_address': contract_address });
     });
@@ -252,6 +253,7 @@ module.exports = function (dbconnection) {
         async function (req, res) {
             res.send({ url: "/appChain/DataBroker/profile" });
         });
+
     router.get('/profile', isAuthenticated, async (req, res) => {
         let { identity, pubkey, userType } = req.user;
         let DB_filter = {
@@ -267,13 +269,15 @@ module.exports = function (dbconnection) {
             res.render('appChain/DataBroker/profile', { address: identity });
         }
     });
+
     router.get('/authorize', isAuthenticated, async (req, res) => {
-        //Find all data requesters for this platform from the database
+        // Find all data requesters for this platform from the database
         let ALLdataRequesters = await DataRequester.find({}, { name: 1, address: 1, _id: 0 });
         ALLdataRequesters = ALLdataRequesters.sort((a, b) => {
             return a.name.localeCompare(b.name);
         });
 
+        // Read user's ACL
         let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
         let accJson = JSON.parse(acc.toString());
         const permissionData = accJson.Permission;
@@ -298,9 +302,6 @@ module.exports = function (dbconnection) {
                 authorizedData: authorizedDataArray
             });
         }
-
-        console.log(JSON.stringify(permissionDataArray));
-
         res.render('appChain/DataBroker/authorize', { address: req.user.identity, ALLdataRequesters: ALLdataRequesters, contract_address: contract_address, permissionData: permissionDataArray });
     });
 
@@ -308,8 +309,7 @@ module.exports = function (dbconnection) {
         res.render('appChain/DataBroker/request', { address: req.user.identity });
     })
 
-
-    router.post('/dataprovider', async (req, res) => {
+    router.post('/dataprovider', isAuthenticated, async (req, res) => {
         let { pubkey, gender, age, height, weight } = req.body;
         const newProvider = new Dataprovider({
             pubkey: pubkey,
@@ -322,7 +322,7 @@ module.exports = function (dbconnection) {
         res.redirect('./authorize');
     });
 
-    router.post('/datarequester', async (req, res) => {
+    router.post('/datarequester', isAuthenticated, async (req, res) => {
         let { pubkey, rqname } = req.body;
         const newRequester = new DataRequester({
             pubkey: pubkey,
@@ -364,6 +364,15 @@ module.exports = function (dbconnection) {
         }
     })
 
+    router.post("/revokeAuthorizeList", isAuthenticated, async function (req, res) {
+        let { rqname, custodian, data } = req.body;
+        let pubkey = req.user.pubkey;
+        console.log('authorizedList (front) = ' + JSON.stringify(authorizedList));
+        deleteUserFromAuthorizedList(rqname, data, pubkey, custodian);
+        console.log('authorizedList (end) = ' + JSON.stringify(authorizedList));
+        res.send({ url: "/appChain/DataBroker/authorize" });
+    })
+
     router.post("/proposalAndCreateCommit", isAuthenticated, async function (req, res) {
         try {
             let { signature, func } = req.body;
@@ -390,6 +399,16 @@ module.exports = function (dbconnection) {
             return res.send(error)
         }
     })
+
+    router.get('/logout', (req, res) => {
+        req.session.destroy((err) => {
+            if (err) {
+                console.error(err);
+            } else {
+                res.redirect('/appChain/DataBroker');
+            }
+        });
+    });
 
     async function createTransaction() {
         // parameter 0 is user identity
@@ -538,37 +557,64 @@ module.exports = function (dbconnection) {
         return signature_buffer;
     }
 
+    async function UpdateAuthorizeList() {
+        authorizedList = {};
+        // Find all data requesters for this platform from the database
+        let ALLdataProvider = await Dataprovider.find({}, { pubkey: 1, _id: 0 });
 
-    // router.get('/profile', async (req, res) => {
+        for (let i = 0; i < ALLdataProvider.length; i++) {
+            let user = ALLdataProvider[i].pubkey;
+            //console.log(user);
+            let acc = await accInstance.evaluateTransaction('GetUserAccControl', user);
+            let accJson = JSON.parse(acc.toString());
+            for (const address in accJson.Permission) {
+                const permissions = accJson.Permission[address];
+                for (const dataType in permissions) {
+                    const dataInfo = permissions[dataType];
+                    authorizedList[address] = authorizedList[address] || {};
+                    if (!authorizedList[address][dataType]) {
+                        authorizedList[address][dataType] = [];
+                    }
 
-    //     let address = req.user.identity.toLowerCase();
-    //     let result = await Mapping.findOne({ address: address });
-    //     // check binding
-    //     if (result.deviceID.length == 0) {
-    //         res.render('appChain/google/bind', { "address": address });
-    //     } else {
-    //         let r = await accInstance.submitTransaction('Deletekey', req.user.pubkey);
-    //         console.log(r.toString());
-    //         result.deviceID = [];
-    //         await result.save();
-
-
-    //         let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
-    //         let accJson = JSON.parse(acc.toString());
-    //         console.log(accJson);
-    //     }
-    // });
-
-
-    router.get('/logout', (req, res) => {
-        req.session.destroy((err) => {
-            if (err) {
-                console.error(err);
-            } else {
-                res.redirect('/appChain/DataBroker');
+                    authorizedList[address][dataType].push({
+                        user: user,
+                        ...dataInfo,
+                    });
+                }
             }
-        });
-    });
+        }
+        console.log('authorizedList(in) = ' + JSON.stringify(authorizedList));
+    }
+
+    function deleteUserFromAuthorizedList(requestername, dataType, user, custodian) {
+        // 判斷是否存在requestername
+        if (authorizedList.hasOwnProperty(requestername)) {
+            const dataTypes = authorizedList[requestername];
+            // 判斷是否存在dataType
+            if (dataTypes.hasOwnProperty(dataType)) {
+                const dataTypeArr = dataTypes[dataType];
+                let indexToRemove = -1;
+                // 尋找符合user和custodian的物件
+                dataTypeArr.forEach((item, index) => {
+                    if (item.user === user && item.custodian === custodian) {
+                        indexToRemove = index;
+                    }
+                });
+                // 如果找到符合的物件，就將它從陣列中移除
+                if (indexToRemove !== -1) {
+                    dataTypeArr.splice(indexToRemove, 1);
+                }
+            }
+        }
+    }
+
+    const updateAuthorizedListHourly = async () => {
+        await UpdateAuthorizeList();
+    }
+
+    //Update authorization list every hour
+    setInterval(updateAuthorizedListHourly, 60 * 60 * 1000);
+
     init();
     module.exports = router;
     return router;

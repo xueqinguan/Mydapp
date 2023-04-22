@@ -23,9 +23,9 @@
                         >
                             <thead>
                                 <tr>
-                                    <th>requestName</th>
-                                    <th>custodian</th>
-                                    <th>authorized data / type</th>
+                                    <th>Data Requester</th>
+                                    <th>Data Custodian</th>
+                                    <th>Authorized Datatype / Data</th>
                                     <th>authorized time</th>
                                     <th>operation</th>
                                 </tr>
@@ -600,7 +600,21 @@
             if (alert(`${result}`)) {
                 window.location.reload();
             }
-            window.location.reload();
+            $.ajax({
+                type: 'POST',
+                url: '/appChain/DataBroker/revokeAuthorizeList',
+                data: {
+                    rqname: rqname,
+                    custodian: custodian,
+                    data: data,
+                },
+                success: function (response) {
+                    console.log(response);
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr);
+                },
+            });
         });
     }
 
