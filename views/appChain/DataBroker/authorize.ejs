@@ -24,6 +24,7 @@
                             <thead>
                                 <tr>
                                     <th>requestName</th>
+                                    <th>custodian</th>
                                     <th>authorized data / type</th>
                                     <th>authorized time</th>
                                     <th>operation</th>
@@ -32,15 +33,15 @@
                             <tbody>
                                 <% permissionData.forEach(({requestName,
                                 authorizedData}) => { %> <%
-                                authorizedData.forEach(({dataType, startTime,
-                                endTime, operation}) => { %>
+                                authorizedData.forEach(({dataType,custodian,
+                                startTime, endTime, operation}) => { %>
                                 <tr>
                                     <td>
                                         <%= ALLdataRequesters.find(rq =>
                                         rq.address === requestName)?.name ||
                                         requestName %>
                                     </td>
-
+                                    <td><%= custodian %></td>
                                     <td><%= dataType %></td>
                                     <td
                                         class="<%= startTime === '0' && endTime === '-1' ? 'empty-cell' : '' %>"
@@ -54,6 +55,7 @@
                                         <button
                                             class="revoke btn btn-danger"
                                             data-requestname="<%= requestName %>"
+                                            data-custodian="<%= custodian %>"
                                             data-authorizeddata="<%= dataType %>"
                                         >
                                             revoke
@@ -146,6 +148,20 @@
                         <div class="input-group mt-3">
                             <div class="input-group-prepend">
                                 <span id="" class="input-group-text"
+                                    >Data Custodian</span
+                                >
+                            </div>
+                            <input
+                                id="custodian_A"
+                                type="text"
+                                placeholder=""
+                                required="required"
+                                class="form-control"
+                            />
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
                                     >data type</span
                                 >
                             </div>
@@ -220,6 +236,20 @@
                                 </option>
                                 <% } %>
                             </select>
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >Data Custodian</span
+                                >
+                            </div>
+                            <input
+                                id="custodian_B"
+                                type="text"
+                                placeholder=""
+                                required="required"
+                                class="form-control"
+                            />
                         </div>
                         <div class="input-group mt-3">
                             <div class="input-group-prepend">
@@ -302,6 +332,20 @@
                                 </option>
                                 <% } %>
                             </select>
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text"
+                                    >Data Custodian</span
+                                >
+                            </div>
+                            <input
+                                id="custodian_C"
+                                type="text"
+                                placeholder=""
+                                required="required"
+                                class="form-control"
+                            />
                         </div>
                         <div class="input-group mt-3">
                             <div class="input-group-prepend">
@@ -433,23 +477,26 @@
             var authorizeValue = $('#authorizeRange').val();
 
             // 根據使用者拉霸的值來決定要讀取哪個表單的資料
-            var rqname, data, starttime, endtime;
+            var rqname, data, custodian, starttime, endtime;
 
             switch (authorizeValue) {
                 case '0':
                     rqname = $('#rqname_A').val();
+                    custodian = $('#custodian_A').val();
                     data = $('#data_A').val();
                     starttime = 0;
                     endtime = -1;
                     break;
                 case '1':
                     rqname = $('#rqname_B').val();
+                    custodian = $('#custodian_B').val();
                     data = $('#data_B').val();
                     starttime = $('#starttime').val();
                     endtime = $('#endtime').val();
                     break;
                 case '2':
                     rqname = $('#rqname_C').val();
+                    custodian = $('#custodian_C').val();
                     data = $('#data_C').val();
                     starttime = 0;
                     endtime = -1;
@@ -466,6 +513,7 @@
                 '/appChain/DataBroker/updatePermission',
                 {
                     rqname: selectedAddress,
+                    custodian: custodian,
                     data: data,
                     starttime: starttime,
                     endtime: endtime,
@@ -510,6 +558,7 @@
 
         $('.revoke').on('click', async function (e) {
             const rqname = $(this).data('requestname');
+            const custodian = $(this).data('custodian');
             const data = $(this).data('authorizeddata');
 
             let encryptKey = await personalIdentityInstance.methods
@@ -523,7 +572,7 @@
 
             response = await ajaxAwait(
                 '/appChain/DataBroker/revokePermission',
-                { rqname: rqname, data: data }
+                { rqname: rqname, custodian: custodian, data: data }
             );
             if (response.error) {
                 return alert(`error :${response.result}`);

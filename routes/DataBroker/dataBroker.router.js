@@ -268,46 +268,38 @@ module.exports = function (dbconnection) {
         }
     });
     router.get('/authorize', isAuthenticated, async (req, res) => {
+        //Find all data requesters for this platform from the database
         let ALLdataRequesters = await DataRequester.find({}, { name: 1, address: 1, _id: 0 });
         ALLdataRequesters = ALLdataRequesters.sort((a, b) => {
             return a.name.localeCompare(b.name);
         });
-        //console.log(ALLdataRequesters);
+
         let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
         let accJson = JSON.parse(acc.toString());
         const permissionData = accJson.Permission;
 
-        const result = [];
+        const permissionDataArray = [];
 
-        for (const requestName in permissionData) {
-            const authorizedData = permissionData[requestName];
-            const authorizedDataList = [];
+        for (const [requestName, authorizedData] of Object.entries(permissionData)) {
+            const authorizedDataArray = [];
 
-            for (const dataType in authorizedData) {
-                const timeRange = authorizedData[dataType];
-                authorizedDataList.push({
+            for (const [dataType, { custodian, startTime, endTime }] of Object.entries(authorizedData)) {
+                authorizedDataArray.push({
                     dataType,
-                    startTime: timeRange.startTime,
-                    endTime: timeRange.endTime
+                    custodian,
+                    startTime,
+                    endTime,
+                    operation: 'revoke'
                 });
             }
 
-            result.push({
+            permissionDataArray.push({
                 requestName,
-                authorizedData: authorizedDataList
+                authorizedData: authorizedDataArray
             });
         }
-        const permissionDataArray = Object.entries(permissionData).map(([requestName, authorizedData]) => {
-            const authorizedDataArray = Object.entries(authorizedData).map(([dataType, { startTime, endTime }]) => ({
-                dataType,
-                startTime,
-                endTime,
-                operation: 'revoke'
-            }));
-            return { requestName, authorizedData: authorizedDataArray };
-        });
 
-        //console.log(permissionDataArray);
+        console.log(JSON.stringify(permissionDataArray));
 
         res.render('appChain/DataBroker/authorize', { address: req.user.identity, ALLdataRequesters: ALLdataRequesters, contract_address: contract_address, permissionData: permissionDataArray });
     });
@@ -342,7 +334,7 @@ module.exports = function (dbconnection) {
     });
 
     router.post("/updatePermission", isAuthenticated, async function (req, res) {
-        let { rqname, data, starttime, endtime } = req.body;
+        let { rqname, custodian, data, starttime, endtime } = req.body;
 
         try {
             let acc = await accInstance.evaluateTransaction('GetUserAccControl', req.user.pubkey);
@@ -352,7 +344,7 @@ module.exports = function (dbconnection) {
             // check orgPubkey exist
             //  async UpdatePermission(ctx, dataRequesterName, dataType, startTime = 0, endTime = -1) {
 
-            const digest = await createTransaction(req.user.identity, 'UpdatePermission', rqname, data, starttime, endtime);
+            const digest = await createTransaction(req.user.identity, 'UpdatePermission', rqname, custodian, data, starttime, endtime);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e)
@@ -361,9 +353,9 @@ module.exports = function (dbconnection) {
     });
 
     router.post("/revokePermission", isAuthenticated, async function (req, res) {
-        let { rqname, data } = req.body;
+        let { rqname, custodian, data } = req.body;
         try {
-            const digest = await createTransaction(req.user.identity, 'RevokePermission', rqname, data);
+            const digest = await createTransaction(req.user.identity, 'RevokePermission', rqname, custodian, data);
             return res.send({ 'digest': digest })
         }
         catch (e) {
