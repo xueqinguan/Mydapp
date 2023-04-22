@@ -1,6 +1,6 @@
 <%- include('partials/header') -%>
 
-<div class="container mt-2">
+<!-- <div class="container mt-2">
     <div class="row mt-3">
         <div class="col-md-6 offset-md-3">
             <div class="card">
@@ -13,6 +13,114 @@
                     </h4>
                 </div>
                 <div class="card-body">
+                    
+
+                    <div>
+                        <input
+                            id="authorizeSubmit"
+                            type="submit"
+                            value="submit"
+                            class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
+                        />
+                    </div>
+                    <div class="row mt-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+<body>
+    <div class="container mt-2">
+        <div class="row mt-3">
+            <div class="col-md-10 offset-md-1">
+                <div class="card">
+                    <div class="card-header">
+                        <h4
+                            style="margin: 0; text-align: center"
+                            class="font-weight-bold"
+                        >
+                            Authorized List
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <table
+                            id="data-table"
+                            class="table table-bordered"
+                            style="
+                                font-size: 14px;
+                                text-align: center;
+                                vertical-align: middle;
+                            "
+                        >
+                            <thead>
+                                <tr>
+                                    <th>dataType</th>
+                                    <th>user</th>
+                                    <th>custodian</th>
+                                    <th>time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="data-table-body">
+                                <% for (const dataType in data) { %> <% for
+                                (const item of data[dataType]) { %>
+                                <tr>
+                                    <td class="datatype"><%= dataType %></td>
+                                    <td class="user"><%= item.user %></td>
+                                    <td class="custodian">
+                                        <%= item.custodian %>
+                                    </td>
+                                    <!-- <td><%= item.startTime %></td>
+                                    <td><%= item.endTime %></td> -->
+                                    <td
+                                        class="<%= item.startTime === '0' && item.endTime === '-1' ? 'empty-cell' : '' %> time"
+                                    >
+                                        <% if (item.startTime !== '0' ||
+                                        item.endTime !== '-1') { %> <%=
+                                        item.startTime %> - <%= item.endTime %>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                                <% } %> <% } %>
+                            </tbody>
+                        </table>
+                        <button
+                            type="button"
+                            data-toggle="modal"
+                            data-target="#filterModal"
+                            class="btn btn-primary btn-lg btn-block filter"
+                        >
+                            Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="modal fade"
+        id="filterModal"
+        data-backdrop="static"
+        data-keyboard="false"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Filter Criteria</h5>
+                    <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
                     <div>
                         <div class="input-group mt-3">
                             <span id="" class="input-group-text"
@@ -20,7 +128,7 @@
                             >
                             <select
                                 class="form-select form-control"
-                                id="data_A"
+                                id="dataType"
                             >
                                 <option value="" disabled selected>
                                     Select data type
@@ -45,100 +153,7 @@
                                 >
                             </div>
                             <input
-                                type="text"
-                                placeholder=""
-                                required="required"
-                                class="form-control"
-                            />
-                        </div>
-                        <div class="input-group mt-3">
-                            <div class="input-group-prepend">
-                                <span id="" class="input-group-text"
-                                    >Gender</span
-                                >
-                            </div>
-                            <div
-                                style="
-                                    display: flex;
-                                    flex-direction: row;
-                                    justify-content: center;
-                                    align-items: center;
-                                "
-                            >
-                                <input
-                                    type="radio"
-                                    name="gender"
-                                    id="male"
-                                    value="male"
-                                />
-                                <label class="form-check-label" for="male"
-                                    >Male</label
-                                >
-                                <input
-                                    type="radio"
-                                    name="gender"
-                                    id="female"
-                                    value="female"
-                                />
-                                <label class="form-check-label" for="female"
-                                    >Female</label
-                                >
-                            </div>
-                        </div>
-                        <div class="input-group mt-3">
-                            <div class="input-group-prepend">
-                                <span id="" class="input-group-text"
-                                    >Age range</span
-                                >
-                            </div>
-                            <input
-                                type="text"
-                                placeholder=""
-                                required="required"
-                                class="form-control"
-                            />
-                            -
-                            <input
-                                type="text"
-                                placeholder=""
-                                required="required"
-                                class="form-control"
-                            />
-                        </div>
-                        <div class="input-group mt-3">
-                            <div class="input-group-prepend">
-                                <span id="" class="input-group-text"
-                                    >Weight range</span
-                                >
-                            </div>
-                            <input
-                                type="text"
-                                placeholder=""
-                                required="required"
-                                class="form-control"
-                            />
-                            -
-                            <input
-                                type="text"
-                                placeholder=""
-                                required="required"
-                                class="form-control"
-                            />
-                        </div>
-                        <div class="input-group mt-3">
-                            <div class="input-group-prepend">
-                                <span id="" class="input-group-text"
-                                    >Height range</span
-                                >
-                            </div>
-                            <input
-                                type="text"
-                                placeholder=""
-                                required="required"
-                                class="form-control"
-                            />
-                            -
-                            <input
+                                id="dataAmount"
                                 type="text"
                                 placeholder=""
                                 required="required"
@@ -146,13 +161,12 @@
                             />
                         </div>
                     </div>
-
                     <div>
                         <input
-                            id="authorizeSubmit"
+                            id="FilterSubmit"
                             type="submit"
                             value="submit"
-                            class="btn btn-success btn-lg btn-block mt-4 authorizeSubmit"
+                            class="btn btn-success btn-lg btn-block mt-4 FilterSubmit"
                         />
                     </div>
                     <div class="row mt-1"></div>
@@ -160,6 +174,71 @@
             </div>
         </div>
     </div>
-</div>
+</body>
+
+<script>
+    var account;
+    async function buildListener() {
+        $('.FilterSubmit').on('click', async function (e) {
+            let dataType = $('#dataType').val();
+            let dataAmount = $('#dataAmount').val();
+            $.ajax({
+                type: 'POST',
+                url: '/appChain/DataBroker/datafilter',
+                data: {
+                    dataType: dataType,
+                    dataAmount: dataAmount,
+                },
+                success: function (response) {
+                    const newData = response.data;
+                    const tableBody = $('#data-table-body');
+                    tableBody.empty();
+                    for (const dataType in newData) {
+                        for (const item of newData[dataType]) {
+                            const tr = $('<tr>');
+
+                            const dataTypeTd = $('<td class="datatype">').text(
+                                dataType
+                            );
+                            const userTd = $('<td class="user">').text(
+                                item.user
+                            );
+                            const custodianTd = $(
+                                '<td class="custodian">'
+                            ).text(item.custodian);
+                            const timeTd = $('<td>');
+                            if (
+                                item.startTime === '0' &&
+                                item.endTime === '-1'
+                            ) {
+                                timeTd.addClass('empty-cell');
+                            } else {
+                                const timeText =
+                                    item.startTime + ' - ' + item.endTime;
+                                timeTd.text(timeText);
+                            }
+                            tr.append(dataTypeTd, userTd, custodianTd, timeTd);
+                            tableBody.append(tr);
+                        }
+                    }
+                    $('#filterModal').modal('hide');
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr);
+                },
+            });
+        });
+    }
+    async function main() {
+        let accounts = await web3.eth.getAccounts();
+        account = accounts[0];
+
+        // console.log('identityManagerABI = '+JSON.stringify(identityManagerABI));
+        // console.log('personalIdentityABI = '+JSON.stringify(personalIdentityABI));
+
+        buildListener();
+    }
+    main();
+</script>
 
 <%- include('partials/footer') -%>

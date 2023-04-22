@@ -7,7 +7,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 
 const config = JSON.parse(fs.readFileSync('./config/server_config.json', 'utf-8'));
-var contract_address = config.contracts.identityManagerAddress;
+const contract_address = config.contracts.identityManagerAddress;
 const Web3 = require('web3');
 const web3 = new Web3(new Web3.providers.WebsocketProvider(config.web3_provider));
 
@@ -64,9 +64,6 @@ module.exports = function (dbconnection) {
         res.send({ 'url': '/appChain/DataCustodian/profile' });
     });
 
-
-
-    //04585a8fca69fd68282d08e1c9b751f7037e59f7642a83bca8178018a25c1b9d769c0088e288836abd1de418cf772c9ccf2746c795d574a072110011e847937d9e
     router.get('/profile', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         await Devicebinding.findOne({ address: address })
@@ -85,18 +82,7 @@ module.exports = function (dbconnection) {
                                 res.render('appChain/DataCustodian/profile', { address: address, chartData: null });
                                 return;
                             }
-                            // const dataByType = {};
-                            // const userHaveType = [];
 
-                            // // 遍歷每一個 type
-                            // doc.devices.types.forEach(({ type, data }) => {
-                            //     // 建立空陣列儲存每個 type 的資料
-                            //     userHaveType.push(type);
-                            //     dataByType[type] = [];
-
-                            //     // 將該 type 的所有資料加入到對應的陣列中
-                            //     dataByType[type].push(...data.map(({ value, timestamp }) => ({ value, timestamp })));
-                            // });
                             const TYPE = ['Heartrates', 'Stepstaken', 'Bodytemperature', 'Systolicbloodpressure', 'Diastolicbloodpressure'];
                             const dataByType = {};
 
@@ -183,8 +169,6 @@ module.exports = function (dbconnection) {
         }
     });
 
-
-
     router.get('/addData', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         let pubkey, deviceID;
@@ -200,6 +184,7 @@ module.exports = function (dbconnection) {
         res.render('appChain/DataCustodian/addData', { address: address, pubkey: pubkey, deviceID: deviceID });
     })
 
+    // Simulated physiological data wearable device
     function generateDataForDevice(type, frequency, startDateTime, endDateTime, num) {
         let deviceData = [];
         const dataInterval = frequency * 60 * 1000; // 計算資料產生頻率的毫秒數
@@ -291,7 +276,6 @@ module.exports = function (dbconnection) {
         console.log(deviceData);
         return deviceData;
     }
-
 
     router.post('/addData', async (req, res) => {
         let { address, type, startDate, endDate, frequency } = req.body;

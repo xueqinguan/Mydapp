@@ -56,7 +56,6 @@ module.exports = function (dbconnection) {
     const Dataprovider = dbconnection.model('dataproviders', require('../../models/DataBroker/dataprovider'));
     const DataRequester = dbconnection.model('datarequester', require('../../models/DataBroker/datarequester'));
 
-
     let delay = async (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms))
     }
@@ -68,6 +67,7 @@ module.exports = function (dbconnection) {
             })
         })
     }
+
     async function init() {
         //console.log('google router init()');
         await delay(3000);
@@ -120,6 +120,7 @@ module.exports = function (dbconnection) {
             res.redirect('/appChain/DataBroker');
         }
     };
+
     passport.use('local', new LocalStrategy({
         usernameField: 'account',
         passwordField: 'signature',
@@ -135,7 +136,7 @@ module.exports = function (dbconnection) {
         res.render('appChain/DataBroker/homepage', { 'require_signature': require_signature, 'contract_address': contract_address });
     });
 
-    router.post('/loginWithMetamask', async function (req, res, next) {
+    router.post('/loginWithMetamask', async (req, res, next) => {
         const address = req.body.account.toLowerCase();
 
         let { account, signature } = req.body;
@@ -306,7 +307,50 @@ module.exports = function (dbconnection) {
     });
 
     router.get('/request', isAuthenticated, async (req, res) => {
-        res.render('appChain/DataBroker/request', { address: req.user.identity });
+        let myList;
+        let address = req.user.identity;
+        if (authorizedList[address]) {
+            myList = authorizedList[address];
+        }
+        const data = {};
+        for (const dataType in myList) {
+            if (myList.hasOwnProperty(dataType)) {
+                for (const item of myList[dataType]) {
+                    if (!data[dataType]) {
+                        data[dataType] = [];
+                    }
+                    data[dataType].push({
+                        user: item.user,
+                        custodian: item.custodian,
+                        startTime: item.startTime,
+                        endTime: item.endTime
+                    });
+                }
+            }
+        }
+        res.render('appChain/DataBroker/request', { address: req.user.identity, data: data });
+    });
+
+    router.post('/datafilter', isAuthenticated, async (req, res) => {
+        let { dataType, dataAmount } = req.body;
+        let myList;
+        let address = req.user.identity;
+        const data = {};
+        if (authorizedList[address][dataType]) {
+            const myList = authorizedList[address][dataType];
+            for (const item of myList) {
+                if (!data[dataType]) {
+                    data[dataType] = [];
+                }
+                data[dataType].push({
+                    user: item.user,
+                    custodian: item.custodian,
+                    startTime: item.startTime,
+                    endTime: item.endTime
+                });
+            }
+        }
+        res.json({ address: req.user.identity, data: data });
     })
 
     router.post('/dataprovider', isAuthenticated, async (req, res) => {
@@ -333,7 +377,7 @@ module.exports = function (dbconnection) {
         res.redirect('./request');
     });
 
-    router.post("/updatePermission", isAuthenticated, async function (req, res) {
+    router.post("/updatePermission", isAuthenticated, async (req, res) => {
         let { rqname, custodian, data, starttime, endtime } = req.body;
 
         try {
@@ -352,7 +396,7 @@ module.exports = function (dbconnection) {
         }
     });
 
-    router.post("/revokePermission", isAuthenticated, async function (req, res) {
+    router.post("/revokePermission", isAuthenticated, async (req, res) => {
         let { rqname, custodian, data } = req.body;
         try {
             const digest = await createTransaction(req.user.identity, 'RevokePermission', rqname, custodian, data);
@@ -364,7 +408,7 @@ module.exports = function (dbconnection) {
         }
     })
 
-    router.post("/revokeAuthorizeList", isAuthenticated, async function (req, res) {
+    router.post("/revokeAuthorizeList", isAuthenticated, async (req, res) => {
         let { rqname, custodian, data } = req.body;
         let pubkey = req.user.pubkey;
         console.log('authorizedList (front) = ' + JSON.stringify(authorizedList));
@@ -373,7 +417,7 @@ module.exports = function (dbconnection) {
         res.send({ url: "/appChain/DataBroker/authorize" });
     })
 
-    router.post("/proposalAndCreateCommit", isAuthenticated, async function (req, res) {
+    router.post("/proposalAndCreateCommit", isAuthenticated, async (req, res) => {
         try {
             let { signature, func } = req.body;
             let signature_buffer = convertSignature(signature)
@@ -387,7 +431,7 @@ module.exports = function (dbconnection) {
         }
     });
 
-    router.post("/commitSend", isAuthenticated, async function (req, res) {
+    router.post("/commitSend", isAuthenticated, async (req, res) => {
         try {
             let { signature, func } = req.body;
             let signature_buffer = convertSignature(signature);
@@ -583,7 +627,7 @@ module.exports = function (dbconnection) {
                 }
             }
         }
-        console.log('authorizedList(in) = ' + JSON.stringify(authorizedList));
+        // console.log('authorizedList(in) = ' + JSON.stringify(authorizedList));
     }
 
     function deleteUserFromAuthorizedList(requestername, dataType, user, custodian) {
